@@ -90,6 +90,22 @@
 
     <!-- 오른쪽: 상품 목록 + 관리자 기능 -->
     <div class="main-content">
+      <!-- 수정된 부분 시작 -->
+      <h1>상품 목록</h1>
+      <form method="get"
+            action="{{ url_for('product_bp.products') }}"
+            style="margin-bottom:20px;">
+        <input type="text"
+               name="q"
+               placeholder="상품 검색"
+               value="{{ search_query or '' }}">
+        {% if selected %}
+          <input type="hidden"
+                 name="category"
+                 value="{{ selected }}">
+        {% endif %}
+        <button type="submit">검색</button>
+      </form>
       <h1>product</h1>
 
       <!-- 관리자: 신규 등록 링크 -->

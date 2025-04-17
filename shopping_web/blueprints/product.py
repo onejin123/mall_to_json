@@ -34,9 +34,15 @@ def product_detail(product_id: int):
 @product_bp.route("/products", endpoint="products")
 def products():
     category = request.args.get("category")
+    search_query = request.args.get("q")
     conn = current_app.get_db_connection()
 
-    if category:
+    if search_query:
+        products = conn.execute(
+            "SELECT * FROM products WHERE name LIKE ? OR category LIKE ?",
+            (f"%{search_query}%", f"%{search_query}%")
+        ).fetchall()
+    elif category:
         products = conn.execute(
             "SELECT * FROM products WHERE category = ?",
             (category,)
@@ -52,6 +58,7 @@ def products():
         products=products,
         categories=categories,
         selected=category,
+        search_query=search_query
     )
 
 @product_bp.route("/products/new", methods=["GET", "POST"], endpoint="create_product")
