@@ -65,9 +65,9 @@
     <div class="sidebar">
       <h3>category</h3>
       <ul>
-        <li><a href="{{ url_for('products') }}">all</a></li>
+        <li><a href="{{ url_for('product_bp.products') }}">all</a></li>
         {% for cat in categories %}
-        <li><a href="{{ url_for('products', category=cat['category']) }}"
+        <li><a href="{{ url_for('product_bp.products', category=cat['category']) }}"
                {% if selected == cat['category'] %} style="font-weight:bold;" {% endif %}>
                {{ cat['category'] }}
             </a></li>
@@ -79,7 +79,7 @@
     <div class="product-list">
       {% for product in products %}
       <div class="product-item">
-        <a href="{{ url_for('product_detail', product_id=product['id']) }}">
+        <a href="{{ url_for('product_bp.product_detail', product_id=product['id']) }}">
           <img src="{{ url_for('static', filename='images/' + product['image']) }}">
           <p>{{ product['name'] }}</p>
           <p class="price">{{ product['price'] }}&#x20a9</p>

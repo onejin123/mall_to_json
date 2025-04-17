@@ -101,9 +101,9 @@
     <!-- 🔹 사이드바 -->
     <div class="sidebar">
       <ul>
-        <li><a href="{{ url_for('contact', type='notice') }}" class="{{ 'active' if board_type == 'notice' else '' }}">📢 공지사항</a></li>
-        <li><a href="{{ url_for('contact', type='faq') }}" class="{{ 'active' if board_type == 'faq' else '' }}">❓ FAQ</a></li>
-        <li><a href="{{ url_for('contact', type='qna') }}" class="{{ 'active' if board_type == 'qna' else '' }}">✉️ 1:1 문의</a></li>
+        <li><a href="{{ url_for('contact_bp.contact', type='notice') }}" class="{{ 'active' if board_type == 'notice' else '' }}">📢 공지사항</a></li>
+        <li><a href="{{ url_for('contact_bp.contact', type='faq') }}" class="{{ 'active' if board_type == 'faq' else '' }}">❓ FAQ</a></li>
+        <li><a href="{{ url_for('contact_bp.contact', type='qna') }}" class="{{ 'active' if board_type == 'qna' else '' }}">✉️ 1:1 문의</a></li>
       </ul>
     </div>
 
@@ -131,7 +131,7 @@
               </div>
           
               <!-- 🔹 수정 폼 (숨겨진 상태) -->
-              <form class="edit-form" method="post" action="{{ url_for('edit_post_inline') }}" style="display:none;">
+              <form class="edit-form" method="post" action="{{ url_for('contact_bp.edit_post_inline') }}" style="display:none;">
                 <input type="hidden" name="post_id" value="{{ post['id'] }}">
                 <input type="text" name="title" value="{{ post['title'] }}" required style="width:100%; margin-bottom:10px;">
                 <textarea name="content" rows="4" required style="width:100%;">{{ post['content'] }}</textarea>
@@ -145,7 +145,7 @@
               {% if session.get('is_admin') or session.get('user_id') == post['author_id'] %}
               <div class="post-buttons">
                 <button type="button" onclick="editPost(this)">✏️ 수정</button>
-                <form method="post" action="{{ url_for('delete_post', post_id=post['id']) }}" style="display:inline;">
+                <form method="post" action="{{ url_for('contact_bp.delete_post', post_id=post['id']) }}" style="display:inline;">
                   <button type="submit" onclick="return confirm('정말 삭제하시겠습니까?');">🗑️ 삭제</button>
                 </form>
               </div>
@@ -161,7 +161,7 @@
 
   <!-- ✏️ 하단 고정 글쓰기 버튼 -->
   {% if board_type == 'qna' or session.get('is_admin') %}
-    <a class="write-btn" href="{{ url_for('write_post', type=board_type) }}">✏️ 글쓰기</a>
+    <a class="write-btn" href="{{ url_for('contact_bp.write_post', type=board_type) }}">✏️ 글쓰기</a>
   {% endif %}
   <script>
     function togglePost(el) {

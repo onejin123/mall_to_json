@@ -84,3 +84,17 @@ def edit_post_inline():
 
     flash("게시글이 수정되었습니다.")
     return redirect(url_for("contact_bp.contact", type=post["board_type"]))
+
+@contact_bp.route("/contact/delete/<int:post_id>", methods=["POST"], endpoint="delete_post")
+def delete_post(post_id):
+    # 권한 체크(관리자 또는 작성자)
+    if not (session.get("is_admin") or session.get("user_id") == post_id):
+        flash("삭제 권한이 없습니다.")
+        return redirect(url_for("contact_bp.contact", type=request.args.get("type", "qna")))
+
+    conn = current_app.get_db_connection()
+    conn.execute("DELETE FROM posts WHERE id = ?", (post_id,))
+    conn.commit()
+    conn.close()
+    flash("게시글이 삭제되었습니다.")
+    return redirect(url_for("contact_bp.contact", type=request.args.get("type", "qna")))
