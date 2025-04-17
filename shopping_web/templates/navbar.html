@@ -1,24 +1,24 @@
 <div class="navbar">
-    <a class="logo" href="{{ url_for('index') }}">
+    <a class="logo" href="{{ url_for('main_bp.index') }}">
       <img src="{{ url_for('static', filename='images/logo.png') }}" height="40">
       Source de Vérité
     </a>
     <ul>
-        <li><a href="{{ url_for('index') }}">Home</a></li>
-        <li><a href="{{ url_for('products') }}">Product</a></li>
-        <li><a href="{{ url_for('contact') }}">Contact</a></li>
+        <li><a href="{{ url_for('main_bp.index') }}">Home</a></li>
+        <li><a href="{{ url_for('product_bp.products') }}">Product</a></li>
+        <li><a href="{{ url_for('contact_bp.contact') }}">Contact</a></li>
         {% if session.get('user_id') %}
         <li>
-            <a href="{{ url_for('cart') }}">
+            <a href="{{ url_for('cart_bp.cart') }}">
                 Cart{% if cart_count > 0 %} ({{ cart_count }}){% endif %}
             </a>
         </li>
-        <li><a href="{{ url_for('profile') }}">My page</a></li>
-            <li><a href="{{ url_for('logout') }}">Log out</a></li>
-            <li><span>Welcome, {{ session['user_name'] }}!</span></li>
+        <li><a href="{{ url_for('auth_bp.profile') }}">My page</a></li>
+        <li><a href="{{ url_for('auth_bp.logout') }}">Log out</a></li>
+        <li><span>Welcome, {{ session['user_name'] }}!</span></li>
         {% else %}
-            <li><a href="{{ url_for('login') }}">Log in</a></li>
-            <li><a href="{{ url_for('register') }}">Sign up</a></li>
+        <li><a href="{{ url_for('auth_bp.login') }}">Log in</a></li>
+        <li><a href="{{ url_for('auth_bp.register') }}">Sign up</a></li>
         {% endif %}
     </ul>
-  </div>    
+</div>

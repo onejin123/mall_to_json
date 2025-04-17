@@ -32,7 +32,7 @@
     <h1>Our new Products</h1>
     <div class="products">
         {% for product in products %}
-        <a href="{{ url_for('product_detail', product_id=product['id']) }}">
+        <a href="{{ url_for('product_bp.product_detail', product_id=product['id']) }}">
           <img src="{{ url_for('static', filename='images/' + product['image']) }}" alt="{{ product['name'] }}">               
           <p>{{ product['name'] }}</p>
           <p class="price">{{ product['price'] }}&#x20a9</p>
