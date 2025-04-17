@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>Log in</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='./css/style.css') }}">
+    <style>
+      .form-box {
+          width: 400px;
+          margin: 80px auto;
+          padding: 30px;
+          border: 1px solid #ccc;
+          box-shadow: 0 0 10px rgba(0,0,0,0.05);
+      }
+
+      .form-box h2 {
+          text-align: center;
+          margin-bottom: 20px;
+      }
+
+      .form-box input {
+          width: 100%;
+          padding: 10px;
+          margin-bottom: 15px;
+          box-sizing: border-box;
+      }
+
+      .form-box button {
+          width: 100%;
+          padding: 10px;
+          background-color: #333;
+          color: white;
+          border: none;
+          cursor: pointer;
+      }
+
+      .form-box a {
+          display: block;
+          text-align: center;
+          margin-top: 15px;
+          text-decoration: none;
+          color: #333;
+      }
+    </style>
+</head>
+<body>
+  {% include 'navbar.html' %}
+
+  <div class="form-box">
+    <h2>log in</h2>
+
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <ul>
+          {% for message in messages %}
+            <li style="color: red;">{{ message }}</li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+    {% endwith %}
+
+    <form method="post">
+        <input type="email" name="email" placeholder="email" required>
+        <input type="password" name="password" placeholder="password" required>
+        <button type="submit">log in</button>
+    </form>
+    <div class="link-group">
+    <a href="#">find id</a>
+    <a href="#">find password</a>
+    <a href="{{ url_for('register') }}">Sign up</a>
+    </div>
+  </div>
+
+</body>
+</html>

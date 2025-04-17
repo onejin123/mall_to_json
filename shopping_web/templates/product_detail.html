@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>{{ product['name'] }} | Detail</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='./css/style.css') }}">
+  <style>
+    .detail-container {
+      width: 800px;
+      margin: 80px auto;
+    }
+    .detail-image {
+      float: left;
+      width: 300px;
+    }
+    .detail-info {
+      float: left;
+      width: 460px;
+      margin-left: 40px;
+    }
+    .detail-info h2 {
+      margin-top: 0;
+    }
+    .btn-group {
+      margin-top: 20px;
+    }
+    .btn-group button {
+      padding: 10px 20px;
+      margin-right: 10px;
+      background-color: #333;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    .clearfix {
+      clear: both;
+    }
+  </style>
+</head>
+<body>
+    {% include 'navbar.html' %}
+
+
+  <div class="detail-container">
+    <div class="detail-image">
+      <img src="{{ url_for('static', filename='images/' + product['image']) }}" width="100%">
+    </div>
+
+    <div class="detail-info">
+      <h2>{{ product['name'] }}</h2>
+      <p><strong>Price:</strong> {{ product['price'] }}&#x20a9</p>
+      <p>{{ desc.get('description', '상품 설명이 없습니다.') }}</p>
+
+      <form action="/cart/add" method="post">
+        <input type="hidden" name="product_id" value="{{ product['id'] }}">
+        <label for="quantity">Quantity:</label>
+        <input type="number" name="quantity" id="quantity" value="1" min="1" max="10" style="width: 50px;">
+        
+        <div class="btn-group">
+          <button type="submit" name="action" value="add">Cart</button>
+          <button type="submit" name="action" value="buy">Buy</button>
+        </div>
+      </form>
+      
+    </div>
+
+    <div class="clearfix"></div>
+  </div>
+
+</body>
+</html>

@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>qna</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+  {% include 'navbar.html' %}
+
+  <div class="contact-container" style="width: 600px; margin: 80px auto;">
+    <h2>{{ board_type.lower() }}</h2>
+    <form method="post">
+      <input type="text" name="title" placeholder="title" required>
+      <textarea name="content" rows="6" placeholder="" required></textarea>
+      <button type="submit">submit</button>
+    </form>
+  </div>
+</body>
+</html>

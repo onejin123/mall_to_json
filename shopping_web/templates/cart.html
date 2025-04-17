@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>Cart</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='./css/style.css') }}">
+  <style>
+    .cart-container {
+      width: 800px;
+      margin: 80px auto;
+    }
+
+    .cart-item {
+      display: flex;
+      align-items: center;
+      margin-bottom: 20px;
+      border-bottom: 1px solid #ddd;
+      padding-bottom: 15px;
+    }
+
+    .cart-item img {
+      width: 100px;
+      height: 100px;
+      object-fit: contain;
+      margin-right: 20px;
+    }
+
+    .cart-item-info {
+      flex: 1;
+    }
+
+    .cart-summary {
+      text-align: right;
+      font-size: 18px;
+      margin-top: 30px;
+    }
+
+    .btn-group {
+      margin-top: 30px;
+      text-align: right;
+    }
+
+    .btn-group a {
+      padding: 10px 20px;
+      margin-left: 10px;
+      background-color: #333;
+      color: white;
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+    {% include 'navbar.html' %}
+
+
+  <div class="cart-container">
+    <h2>🛒 Cart</h2>
+
+    {% if products %}
+    {% for item in products %}
+    <div class="cart-item">
+      <img src="{{ url_for('static', filename='images/' + item.image) }}">
+      <div class="cart-item-info">
+        <strong>{{ item.name }}</strong><br>
+    
+        <!-- 수량 변경 폼 -->
+        <form action="{{ url_for('update_cart') }}" method="POST" style="display:inline-block;">
+          <input type="hidden" name="product_id" value="{{ item.id }}">
+          quantity:
+          <input type="number" name="quantity" value="{{ item.quantity }}" min="1" style="width: 60px;">
+          <button type="submit">Confirm</button>
+        </form>
+    
+        <!-- 삭제 폼 -->
+        <form action="{{ url_for('remove_from_cart') }}" method="POST" style="display:inline-block; margin-left:10px;">
+          <input type="hidden" name="product_id" value="{{ item.id }}">
+          <button type="submit" style="color:red;">Remove</button>
+        </form>
+    
+        <br>Price: {{ item.price }}&#8361<br>
+        Total: <strong>{{ item.subtotal }}&#8361</strong>
+      </div>
+    </div>
+    {% endfor %}
+
+      <div class="cart-summary">
+        Total price: <strong>{{ total_price }}&#8361</strong>
+      </div>
+
+      <div class="btn-group">
+        <a href="{{ url_for('index') }}">Keep shopping</a>
+        <a href="#">Order</a>
+      </div>
+    {% else %}
+      <p>Empty</p>
+      <a href="{{ url_for('index') }}">Go to shopping →</a>
+    {% endif %}
+  </div>
+
+</body>
+</html>
