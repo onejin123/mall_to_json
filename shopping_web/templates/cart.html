@@ -64,7 +64,7 @@
         <strong>{{ item.name }}</strong><br>
     
         <!-- 수량 변경 폼 -->
-        <form action="{{ url_for('update_cart') }}" method="POST" style="display:inline-block;">
+        <form action="{{ url_for('cart_bp.update_cart') }}" method="POST" style="display:inline-block;">
           <input type="hidden" name="product_id" value="{{ item.id }}">
           quantity:
           <input type="number" name="quantity" value="{{ item.quantity }}" min="1" style="width: 60px;">
@@ -72,7 +72,7 @@
         </form>
     
         <!-- 삭제 폼 -->
-        <form action="{{ url_for('remove_from_cart') }}" method="POST" style="display:inline-block; margin-left:10px;">
+        <form action="{{ url_for('cart_bp.remove_from_cart') }}" method="POST" style="display:inline-block; margin-left:10px;">
           <input type="hidden" name="product_id" value="{{ item.id }}">
           <button type="submit" style="color:red;">Remove</button>
         </form>
