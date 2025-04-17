@@ -1,0 +1,12 @@
+{% include 'navbar.html' %}
+
+<div class="form-box">
+  <h2>새 상품 등록</h2>
+  <form method="post">
+    <input type="text"     name="name"     placeholder="상품명"    required>
+    <input type="text"     name="category" placeholder="카테고리"  required>
+    <input type="number"   name="price"    placeholder="가격"      step="0.01" required>
+    <input type="text"     name="image"    placeholder="이미지 파일명" required>
+    <button type="submit">등록</button>
+  </form>
+</div>
