@@ -54,7 +54,7 @@
 
 
   <div class="cart-container">
-    <h2>🛒 Cart</h2>
+    <h2>Cart</h2>
 
     {% if products %}
     {% for item in products %}
@@ -89,7 +89,7 @@
 
       <div class="btn-group">
         <a href="{{ url_for('main_bp.index') }}">Keep shopping</a>
-        <a href="#">Order</a>
+        <a href="{{ url_for('checkout_bp.checkout') }}">checkout</a>
       </div>
     {% else %}
       <p>Empty</p>

@@ -36,8 +36,9 @@ def create_app() -> Flask:
     from blueprints.cart     import cart_bp
     from blueprints.product  import product_bp
     from blueprints.contact  import contact_bp
+    from blueprints.checkout import checkout_bp
 
-    for bp in (main_bp, auth_bp, cart_bp, product_bp, contact_bp):
+    for bp in (main_bp, auth_bp, cart_bp, product_bp, contact_bp, checkout_bp):
         app.register_blueprint(bp)
 
     # ── 전역 Jinja 컨텍스트 ────────────────────────────────────
