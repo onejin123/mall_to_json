@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>사용자 관리</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <style>
+    .user-table {
+      width: 80%;
+      margin: 50px auto;
+      border-collapse: collapse;
+    }
+    .user-table th, .user-table td {
+      border: 1px solid #ccc;
+      padding: 8px;
+      text-align: center;
+    }
+    .user-table th {
+      background-color: #f4f4f4;
+    }
+    .btn-toggle {
+      padding: 4px 12px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <!-- 공통 네비게이션 바 -->
+  {% include 'navbar.html' %}
+
+  <h2 style="text-align:center;">사용자 관리</h2>
+
+  <!-- 사용자 목록 테이블 -->
+  <table class="user-table">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>이름</th>
+        <th>이메일</th>
+        <th>권한</th>
+        <th>액션</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for user in users %}
+      <tr>
+        <td>{{ user['id'] }}</td>
+        <td>{{ user['name'] }}</td>
+        <td>{{ user['email'] }}</td>
+        <td>
+          {% if user['is_admin'] %}
+            관리
+          {% else %}
+            일반
+          {% endif %}
+        </td>
+        <td>
+          {% if session.get('user_id') != user['id'] %}
+            <!--
+              현재 로그인 중인 자기 자신은 권한 변경 불가.
+              다른 사용자만 토글 버튼이 보임.
+            -->
+            <form method="post"
+                  action="{{ url_for('auth_bp.toggle_user_admin', user_id=user['id']) }}"
+                  style="display:inline;">
+              {% if user['is_admin'] %}
+                <button type="submit" class="btn-toggle">일반 권한</button>
+              {% else %}
+                <button type="submit" class="btn-toggle">관리자 권한</button>
+              {% endif %}
+            </form>
+          {% else %}
+            -
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</body>
+</html>
