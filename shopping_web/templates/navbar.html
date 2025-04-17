@@ -15,6 +15,9 @@
         </li>
         <li><a href="{{ url_for('auth_bp.profile') }}">My page</a></li>
         <li><a href="{{ url_for('auth_bp.logout') }}">Log out</a></li>
+        {% if session.get('is_admin') %}
+        <li><a href="{{ url_for('auth_bp.admin_users') }}">User Management</a></li>
+        {% endif %}
         <li><span>Welcome, {{ session['user_name'] }}!</span></li>
         {% else %}
         <li><a href="{{ url_for('auth_bp.login') }}">Log in</a></li>
