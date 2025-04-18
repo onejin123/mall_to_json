@@ -45,17 +45,17 @@
       {% for user in users %}
       <tr>
         <td>{{ user['id'] }}</td>
-        <td>{{ user['name'] }}</td>
+        <td>{{ user['nickname'] }}</td>
         <td>{{ user['email'] }}</td>
         <td>
-          {% if user['is_admin'] %}
+          {% if user['role_id']== 1 %}
             관리
           {% else %}
             일반
           {% endif %}
         </td>
         <td>
-          {% if session.get('user_id') != user['id'] %}
+          {% if session.get('role_id') != user['id'] %}
             <!--
               현재 로그인 중인 자기 자신은 권한 변경 불가.
               다른 사용자만 토글 버튼이 보임.
@@ -63,7 +63,7 @@
             <form method="post"
                   action="{{ url_for('auth_bp.toggle_user_admin', user_id=user['id']) }}"
                   style="display:inline;">
-              {% if user['is_admin'] %}
+              {% if user['role_id'] %}
                 <button type="submit" class="btn-toggle">일반 권한</button>
               {% else %}
                 <button type="submit" class="btn-toggle">관리자 권한</button>
