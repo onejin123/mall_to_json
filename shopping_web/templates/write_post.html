@@ -2,18 +2,74 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <title>qna</title>
+  <title>QNA 글쓰기</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <style>
+    .contact-container {
+      width: 600px;
+      margin: 80px auto;
+      padding: 30px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.05);
+      background: #fafafa;
+    }
+
+    .contact-container h2 {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .contact-container input[type="text"],
+    .contact-container textarea,
+    .contact-container input[type="file"] {
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 20px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+
+    .contact-container button {
+      width: 100%;
+      padding: 12px;
+      background-color: #333;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      font-size: 15px;
+      cursor: pointer;
+    }
+
+    .contact-container button:hover {
+      background-color: #555;
+    }
+
+    .contact-container label {
+      font-weight: bold;
+      margin-bottom: 5px;
+      display: block;
+    }
+  </style>
 </head>
 <body>
   {% include 'navbar.html' %}
 
-  <div class="contact-container" style="width: 600px; margin: 80px auto;">
-    <h2>{{ board_type.lower() }}</h2>
-    <form method="post">
-      <input type="text" name="title" placeholder="title" required>
-      <textarea name="content" rows="6" placeholder="" required></textarea>
-      <button type="submit">submit</button>
+  <div class="contact-container">
+    <h2>1:1 문의 작성</h2>
+
+    <form method="post" enctype="multipart/form-data">
+      <label for="title">제목</label>
+      <input type="text" name="title" id="title" placeholder="제목을 입력하세요" required>
+
+      <label for="content">내용</label>
+      <textarea name="content" id="content" rows="8" placeholder="문의 내용을 입력해주세요" required></textarea>
+
+      <label for="image">이미지 첨부 </label>
+      <input type="file" name="image" id="image" accept="image/*">
+
+      <button type="submit">문의 등록</button>
     </form>
   </div>
 </body>

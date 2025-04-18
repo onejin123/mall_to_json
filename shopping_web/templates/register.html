@@ -2,8 +2,8 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>sign up</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='./css/style.css') }}">
+    <title>Sign Up</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <style>
       .form-box {
           width: 400px;
@@ -47,7 +47,7 @@
   {% include 'navbar.html' %}
 
   <div class="form-box">
-    <h2>sign up</h2>
+    <h2>Sign Up</h2>
 
     {% with messages = get_flashed_messages() %}
       {% if messages %}
@@ -60,13 +60,14 @@
     {% endwith %}
 
     <form method="post">
-        <input type="text" name="name" placeholder="name" required>
-        <input type="email" name="email" placeholder="email" required>
-        <input type="password" name="password" placeholder="password" required>
-        <button type="submit">sign up</button>
+        <input type="text" name="nickname" placeholder="nickname *" required maxlength="50">
+        <input type="email" name="email" placeholder="email *" required maxlength="100">
+        <input type="password" name="password" placeholder="password *" required maxlength="255">
+        <input type="tel" name="phone" placeholder="phone" maxlength="20">
+        <button type="submit">Sign up</button>
     </form>
 
-    <a href="{{ url_for('auth_bp.login') }}">log in</a>
+    <a href="{{ url_for('auth_bp.login') }}">Sign in</a>
   </div>
 
 </body>

@@ -14,43 +14,54 @@ auth_bp = Blueprint("auth_bp", __name__)
 # ─────────────────────────────────────────────────────────────────────────────
 # 회원가입
 # ─────────────────────────────────────────────────────────────────────────────
+from werkzeug.security import generate_password_hash
+import pymysql.err as errors
+
 @auth_bp.route("/register", methods=["GET", "POST"], endpoint="register")
 def register():
     if request.method == "POST":
-        name     = request.form["name"]
         email    = request.form["email"]
         password = request.form["password"]
+        nickname = request.form.get("nickname") or None
+        phone    = request.form.get("phone") or None
 
-        if not name or not email or not password:
-            flash("모든 항목을 입력해주세요.")
+        if not email or not password:
+            flash("이메일과 비밀번호는 필수입니다.")
             return redirect(url_for("auth_bp.register"))
+
+        # 비밀번호 해싱
+        hashed_pw = generate_password_hash(password)
 
         conn = current_app.get_db_connection()
         try:
             with conn.cursor() as cursor:
-                cursor.execute(
-                    "INSERT INTO users (name, email, password) VALUES (%s, %s, %s)",
-                    (name, email, password)
-                )
+                cursor.execute("""
+                    INSERT INTO users (email, password, nickname, phone)
+                    VALUES (%s, %s, %s, %s)
+                """, (email, hashed_pw, nickname, phone))
             conn.commit()
-            flash("회원가입이 완료되었습니다.")
             return redirect(url_for("main_bp.index"))
+
         except errors.IntegrityError:
             flash("이미 등록된 이메일입니다.")
             return redirect(url_for("auth_bp.register"))
+
         finally:
             conn.close()
 
     return render_template("register.html")
 
 
+
 # ─────────────────────────────────────────────────────────────────────────────
 # 로그인
 # ─────────────────────────────────────────────────────────────────────────────
+from werkzeug.security import check_password_hash
+
 @auth_bp.route("/login", methods=["GET", "POST"], endpoint="login")
 def login():
     if request.method == "POST":
-        email    = request.form["email"]
+        email = request.form["email"]
         password = request.form["password"]
 
         conn = current_app.get_db_connection()
@@ -58,28 +69,30 @@ def login():
             with conn.cursor(dictionary=True) as cursor:
                 cursor.execute(
                     """
-                    SELECT u.id, u.nickname AS nickname, u.email,
-                        u.password, u.role_id, r.name AS role_name
+                    SELECT u.id, u.nickname, u.email, u.password, u.role_id, r.name AS role_name
                     FROM users u
-                    JOIN roles r ON u.role_id = r.id
-                    WHERE u.email = %s AND u.password = %s
+                    LEFT JOIN roles r ON u.role_id = r.id
+                    WHERE u.email = %s
                     """,
-                    (email, password)
+                    (email,)
                 )
                 user = cursor.fetchone()
         finally:
             conn.close()
 
-        if user:
+        # 사용자 존재 여부 및 비밀번호 검증
+        if user and check_password_hash(user["password"], password):
             session["user_id"]   = user["id"]
             session["user_name"] = user["nickname"]
             session["is_admin"]  = (user["role_name"] == "ADMIN")
+            flash("로그인 성공!")
             return redirect(url_for("main_bp.index"))
 
         flash("이메일 또는 비밀번호가 올바르지 않습니다.")
         return redirect(url_for("auth_bp.login"))
 
     return render_template("login.html")
+
 
 
 # ─────────────────────────────────────────────────────────────────────────────

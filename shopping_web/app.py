@@ -9,8 +9,8 @@ from mysql.connector import pooling
 DB_CONFIG = {
     "host":     os.getenv("MYSQL_HOST", "localhost"),
     "port":     int(os.getenv("MYSQL_PORT", 3306)),
-    "user":     os.getenv("MYSQL_USER", "mall_user"),
-    "password": os.getenv("MYSQL_PASSWORD", "mall_pass"),
+    "user":     os.getenv("MYSQL_USER", "root"),
+    "password": os.getenv("MYSQL_PASSWORD", "0000"),
     "database": os.getenv("MYSQL_DB", "mall"),
     "charset":  "utf8mb4",
 }
