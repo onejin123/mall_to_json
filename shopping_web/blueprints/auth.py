@@ -128,8 +128,10 @@ def admin_users():
         with conn.cursor(dictionary=True) as cursor:
             cursor.execute(
                 """
-                SELECT u.id, u.nickname AS name, u.email,
-                       (r.name = 'ADMIN') AS is_admin
+                SELECT
+                    u.id, u.email, u.nickname, u.phone,
+                    u.role_id, r.name AS role_name,
+                    u.created_at, u.updated_at
                   FROM users u
                   JOIN roles r ON u.role_id = r.id
                 """

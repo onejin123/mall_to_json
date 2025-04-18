@@ -91,7 +91,7 @@ def create_product():
 
     if request.method == "POST":
         name     = request.form["name"]
-        category = request.form["category"]
+        category_type_id = request.form["category_type_id"]
         price    = request.form["price"]
         image    = request.form["image"]
 
@@ -99,8 +99,8 @@ def create_product():
         try:
             with conn.cursor() as cursor:
                 cursor.execute(
-                    "INSERT INTO products (name, category, price, image) VALUES (%s, %s, %s, %s)",
-                    (name, category, price, image)
+                    "INSERT INTO products (name, category_type_id, price, image) VALUES (%s, %s, %s, %s)",
+                    (name, category_type_id, price, image)
                 )
             conn.commit()
         finally:
