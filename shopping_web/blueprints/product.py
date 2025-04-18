@@ -11,9 +11,16 @@ BASE_DIR   = Path(__file__).resolve().parents[2]  # shopping_web/
 # ─────────────────────────────────────────────────────────────────────────────
 @product_bp.route("/product/<int:product_id>", endpoint="product_detail")
 def product_detail(product_id: int):
-    conn     = current_app.get_db_connection()
-    product  = conn.execute("SELECT * FROM products WHERE id = ?", (product_id,)).fetchone()
-    conn.close()
+    conn = current_app.get_db_connection()
+    try:
+        with conn.cursor(dictionary=True) as cursor:
+            cursor.execute(
+                "SELECT * FROM products WHERE id = %s",
+                (product_id,)
+            )
+            product = cursor.fetchone()
+    finally:
+        conn.close()
 
     desc_path = BASE_DIR / "static" / "data" / "product_descriptions.json"
     descriptions = {}
@@ -36,22 +43,37 @@ def products():
     category = request.args.get("category")
     search_query = request.args.get("q")
     conn = current_app.get_db_connection()
+    try:
+        with conn.cursor(dictionary=True) as cursor:
+            # Base query joining products and category_types
+            query = """
+                SELECT
+                    p.id, p.name, p.description, p.price, p.stock_quantity,
+                    p.created_at, p.updated_at,
+                    ct.name AS category
+                FROM products p
+                JOIN category_types ct ON p.category_type_id = ct.id
+            """
+            params = []
+            if search_query:
+                query += " WHERE p.name LIKE %s OR ct.name LIKE %s"
+                params.extend([f"%{search_query}%", f"%{search_query}%"])
+            elif category:
+                query += " WHERE ct.name = %s"
+                params.append(category)
+            query += " ORDER BY p.created_at DESC"
+            cursor.execute(query, tuple(params))
+            products = cursor.fetchall()
 
-    if search_query:
-        products = conn.execute(
-            "SELECT * FROM products WHERE name LIKE ? OR category LIKE ?",
-            (f"%{search_query}%", f"%{search_query}%")
-        ).fetchall()
-    elif category:
-        products = conn.execute(
-            "SELECT * FROM products WHERE category = ?",
-            (category,)
-        ).fetchall()
-    else:
-        products = conn.execute("SELECT * FROM products").fetchall()
-
-    categories = conn.execute("SELECT DISTINCT category FROM products").fetchall()
-    conn.close()
+            # Fetch distinct category names for filter dropdown
+            cursor.execute("""
+                SELECT DISTINCT ct.name AS category
+                FROM category_types ct
+                JOIN products p ON p.category_type_id = ct.id
+            """)
+            categories = cursor.fetchall()
+    finally:
+        conn.close()
 
     return render_template(
         "product.html",
@@ -74,12 +96,15 @@ def create_product():
         image    = request.form["image"]
 
         conn = current_app.get_db_connection()
-        conn.execute(
-            "INSERT INTO products (name, category, price, image) VALUES (?, ?, ?, ?)",
-            (name, category, price, image)
-        )
-        conn.commit()
-        conn.close()
+        try:
+            with conn.cursor() as cursor:
+                cursor.execute(
+                    "INSERT INTO products (name, category, price, image) VALUES (%s, %s, %s, %s)",
+                    (name, category, price, image)
+                )
+            conn.commit()
+        finally:
+            conn.close()
 
         flash("상품이 등록되었습니다.")
         return redirect(url_for("product_bp.products"))
@@ -94,9 +119,15 @@ def delete_product(product_id):
         return redirect(url_for("product_bp.product_detail", product_id=product_id))
 
     conn = current_app.get_db_connection()
-    conn.execute("DELETE FROM products WHERE id = ?", (product_id,))
-    conn.commit()
-    conn.close()
+    try:
+        with conn.cursor() as cursor:
+            cursor.execute(
+                "DELETE FROM products WHERE id = %s",
+                (product_id,)
+            )
+        conn.commit()
+    finally:
+        conn.close()
 
     flash("상품이 삭제되었습니다.")
     return redirect(url_for("product_bp.products"))

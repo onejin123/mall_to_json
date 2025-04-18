@@ -18,52 +18,54 @@ def checkout():
         return redirect(url_for("cart_bp.cart"))
 
     conn = current_app.get_db_connection()
-    products = []
-    total_price = 0
+    try:
+        # Fetch products and compute total
+        products = []
+        total_price = 0
+        with conn.cursor(dictionary=True) as cursor:
+            for item in cart:
+                cursor.execute(
+                    "SELECT * FROM products WHERE id = %s",
+                    (item["product_id"],)
+                )
+                product = cursor.fetchone()
+                if product:
+                    qty = int(item["quantity"])
+                    subtotal = product["price"] * qty
+                    total_price += subtotal
+                    products.append({
+                        "id":       product["id"],
+                        "name":     product["name"],
+                        "price":    product["price"],
+                        "quantity": qty,
+                        "subtotal": subtotal
+                    })
 
-    for item in cart:
-        product = conn.execute(
-            "SELECT * FROM products WHERE id = ?", (item["product_id"],)
-        ).fetchone()
-        if product:
-            qty = int(item["quantity"])
-            subtotal = product["price"] * qty
-            total_price += subtotal
-            products.append({
-                "id": product["id"],
-                "name": product["name"],
-                "price": product["price"],
-                "quantity": qty,
-                "subtotal": subtotal
-            })
+        if request.method == "POST":
+            address = request.form["address"]
+            payment_method = request.form["payment_method"]
+            user_id = session["user_id"]
 
-    if request.method == "POST":
-        address = request.form["address"]
-        payment_method = request.form["payment_method"]
-        user_id = session["user_id"]
+            # 주문 저장
+            with conn.cursor() as cur:
+                cur.execute(
+                    "INSERT INTO orders (user_id, address, payment_method, total_price) VALUES (%s, %s, %s, %s)",
+                    (user_id, address, payment_method, total_price)
+                )
+                order_id = cur.lastrowid
 
-        # 주문 저장
-        cur = conn.cursor()
-        cur.execute("""
-            INSERT INTO orders (user_id, address, payment_method, total_price)
-            VALUES (?, ?, ?, ?)
-        """, (user_id, address, payment_method, total_price))
-        order_id = cur.lastrowid
-
-        # 상세 항목 저장
-        for p in products:
-            cur.execute("""
-                INSERT INTO order_items (order_id, product_id, quantity, price)
-                VALUES (?, ?, ?, ?)
-            """, (order_id, p["id"], p["quantity"], p["price"]))
-
-        conn.commit()
+                # 상세 항목 저장
+                for p in products:
+                    cur.execute(
+                        "INSERT INTO order_items (order_id, product_id, quantity, price) VALUES (%s, %s, %s, %s)",
+                        (order_id, p["id"], p["quantity"], p["subtotal"])
+                    )
+            conn.commit()
+            session.pop("cart", None)
+            return redirect(url_for("checkout_bp.complete", order_id=order_id))
+    finally:
         conn.close()
 
-        session.pop("cart", None)
-        return redirect(url_for("checkout_bp.complete", order_id=order_id))
-
-    conn.close()
     return render_template("checkout.html", products=products, total_price=total_price)
 
 @checkout_bp.route("/checkout/complete/<int:order_id>", endpoint="complete")
@@ -73,16 +75,23 @@ def checkout_complete(order_id):
         return redirect(url_for("auth_bp.login"))
 
     conn = current_app.get_db_connection()
+    try:
+        with conn.cursor(dictionary=True) as cursor:
+            cursor.execute(
+                "SELECT * FROM orders WHERE id = %s",
+                (order_id,)
+            )
+            order = cursor.fetchone()
 
-    order = conn.execute("SELECT * FROM orders WHERE id = ?", (order_id,)).fetchone()
-    items = conn.execute("""
-        SELECT oi.*, p.name
-        FROM order_items oi
-        JOIN products p ON oi.product_id = p.id
-        WHERE order_id = ?
-    """, (order_id,)).fetchall()
-
-    conn.close()
+            cursor.execute("""
+                SELECT oi.*, p.name
+                FROM order_items oi
+                JOIN products p ON oi.product_id = p.id
+                WHERE oi.order_id = %s
+            """, (order_id,))
+            items = cursor.fetchall()
+    finally:
+        conn.close()
 
     if not order:
         flash("주문 정보를 찾을 수 없습니다.")

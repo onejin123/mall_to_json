@@ -43,29 +43,29 @@ def cart():
 
     cart_items = session.get("cart", [])
     conn = current_app.get_db_connection()
-
     products, total_price = [], 0
-    for item in cart_items:
-        product = conn.execute(
-            "SELECT * FROM products WHERE id = ?",
-            (item["product_id"],)
-        ).fetchone()
-
-        if product:
-            qty       = int(item["quantity"])
-            subtotal  = product["price"] * qty
-            total_price += subtotal
-            products.append(
-                {
-                    "id":        product["id"],
-                    "name":      product["name"],
-                    "price":     product["price"],
-                    "image":     product["image"],
-                    "quantity":  qty,
-                    "subtotal":  subtotal,
-                }
-            )
-    conn.close()
+    try:
+        with conn.cursor(dictionary=True) as cursor:
+            for item in cart_items:
+                cursor.execute(
+                    "SELECT * FROM products WHERE id = %s",
+                    (item["product_id"],)
+                )
+                product = cursor.fetchone()
+                if product:
+                    qty       = int(item["quantity"])
+                    subtotal  = product["price"] * qty
+                    total_price += subtotal
+                    products.append({
+                        "id":        product["id"],
+                        "name":      product["name"],
+                        "price":     product["price"],
+                        "image":     product["image"],
+                        "quantity":  qty,
+                        "subtotal":  subtotal,
+                    })
+    finally:
+        conn.close()
     return render_template("cart.html", products=products, total_price=total_price)
 
 
@@ -104,4 +104,3 @@ def remove_from_cart():
     cart = [item for item in session.get("cart", []) if item["product_id"] != product_id]
     session["cart"] = cart
     return redirect(url_for("cart_bp.cart"))
-

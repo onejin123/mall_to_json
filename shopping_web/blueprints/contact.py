@@ -2,6 +2,8 @@ from flask import (
     Blueprint, render_template, request, redirect,
     url_for, flash, session, current_app
 )
+import mysql.connector
+from mysql.connector import errors
 
 contact_bp = Blueprint("contact_bp", __name__)
 
@@ -11,12 +13,16 @@ contact_bp = Blueprint("contact_bp", __name__)
 @contact_bp.route("/contact", endpoint="contact")
 def contact():
     board_type = request.args.get("type", "notice")
-    conn  = current_app.get_db_connection()
-    posts = conn.execute(
-        "SELECT * FROM posts WHERE board_type = ? ORDER BY created_at DESC",
-        (board_type,)
-    ).fetchall()
-    conn.close()
+    conn = current_app.get_db_connection()
+    try:
+        with conn.cursor(dictionary=True) as cursor:
+            cursor.execute(
+                "SELECT * FROM inquiries WHERE type = %s ORDER BY created_at DESC",
+                (board_type,)
+            )
+            posts = cursor.fetchall()
+    finally:
+        conn.close()
     return render_template("contact.html", board_type=board_type, posts=posts)
 
 
@@ -41,12 +47,15 @@ def write_post():
         author  = session["user_id"]
 
         conn = current_app.get_db_connection()
-        conn.execute(
-            "INSERT INTO posts (title, content, board_type, author_id) VALUES (?,?,?,?)",
-            (title, content, board_type, author)
-        )
-        conn.commit()
-        conn.close()
+        try:
+            with conn.cursor() as cursor:
+                cursor.execute(
+                    "INSERT INTO inquiries (user_id, type, title, content) VALUES (%s, %s, %s, %s)",
+                    (author, board_type, title, content)
+                )
+            conn.commit()
+        finally:
+            conn.close()
 
         flash("글이 작성되었습니다.")
         return redirect(url_for("contact_bp.contact", type=board_type))
@@ -68,22 +77,29 @@ def edit_post_inline():
     content = request.form["content"]
 
     conn = current_app.get_db_connection()
-    post = conn.execute("SELECT * FROM posts WHERE id = ?", (post_id,)).fetchone()
+    try:
+        with conn.cursor(dictionary=True) as cursor:
+            cursor.execute(
+                "SELECT * FROM inquiries WHERE id = %s",
+                (post_id,)
+            )
+            post = cursor.fetchone()
 
-    # 권한 체크
-    if not post or (session["user_id"] != post["author_id"] and not session.get("is_admin")):
-        flash("수정 권한이 없습니다.")
-        return redirect(url_for("contact_bp.contact", type=post["board_type"]))
+            # 권한 체크
+            if not post or (session["user_id"] != post["user_id"] and not session.get("is_admin")):
+                flash("수정 권한이 없습니다.")
+                return redirect(url_for("contact_bp.contact", type=post["type"]))
 
-    conn.execute(
-        "UPDATE posts SET title = ?, content = ? WHERE id = ?",
-        (title, content, post_id)
-    )
-    conn.commit()
-    conn.close()
+            cursor.execute(
+                "UPDATE inquiries SET title = %s, content = %s WHERE id = %s",
+                (title, content, post_id)
+            )
+        conn.commit()
+    finally:
+        conn.close()
 
     flash("게시글이 수정되었습니다.")
-    return redirect(url_for("contact_bp.contact", type=post["board_type"]))
+    return redirect(url_for("contact_bp.contact", type=post["type"]))
 
 @contact_bp.route("/contact/delete/<int:post_id>", methods=["POST"], endpoint="delete_post")
 def delete_post(post_id):
@@ -93,8 +109,14 @@ def delete_post(post_id):
         return redirect(url_for("contact_bp.contact", type=request.args.get("type", "qna")))
 
     conn = current_app.get_db_connection()
-    conn.execute("DELETE FROM posts WHERE id = ?", (post_id,))
-    conn.commit()
-    conn.close()
+    try:
+        with conn.cursor() as cursor:
+            cursor.execute(
+                "DELETE FROM inquiries WHERE id = %s",
+                (post_id,)
+            )
+        conn.commit()
+    finally:
+        conn.close()
     flash("게시글이 삭제되었습니다.")
     return redirect(url_for("contact_bp.contact", type=request.args.get("type", "qna")))
