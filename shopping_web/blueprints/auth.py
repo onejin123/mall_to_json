@@ -29,16 +29,15 @@ def register():
             flash("이메일과 비밀번호는 필수입니다.")
             return redirect(url_for("auth_bp.register"))
 
-        # 비밀번호 해싱
         hashed_pw = generate_password_hash(password)
 
         conn = current_app.get_db_connection()
         try:
             with conn.cursor() as cursor:
                 cursor.execute("""
-                    INSERT INTO users (email, password, nickname, phone)
-                    VALUES (%s, %s, %s, %s)
-                """, (email, hashed_pw, nickname, phone))
+                    INSERT INTO users (email, password, nickname, phone, role_id)
+                    VALUES (%s, %s, %s, %s, %s)
+                """, (email, hashed_pw, nickname, phone, 2))  # ← role_id = 2 (일반 사용자)
             conn.commit()
             return redirect(url_for("main_bp.index"))
 
