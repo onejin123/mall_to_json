@@ -2,8 +2,14 @@ from flask import session, flash, redirect, url_for
 import json
 from pathlib import Path
 from flask import Blueprint, render_template, request, current_app
+import os
+from werkzeug.utils import secure_filename
+from collections import defaultdict
 
 product_bp = Blueprint("product_bp", __name__)
+# 업로드 디렉터리 설정 (app.py에서 UPLOAD_FOLDER 설정 권장)
+UPLOAD_FOLDER = os.path.join(Path(__file__).resolve().parents[2], "static", "uploads")
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 BASE_DIR   = Path(__file__).resolve().parents[2]  # shopping_web/
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -15,7 +21,18 @@ def product_detail(product_id: int):
     try:
         with conn.cursor(dictionary=True) as cursor:
             cursor.execute(
-                "SELECT * FROM products WHERE id = %s",
+                """
+                SELECT
+                    p.id, p.name, p.description, p.price, p.stock_quantity,
+                    p.created_at, p.updated_at,
+                    ct.name AS category,
+                    pi.url AS image
+                FROM products p
+                JOIN category_types ct ON p.category_type_id = ct.id
+                LEFT JOIN product_images pi
+                  ON pi.product_id = p.id AND pi.is_primary = 1
+                WHERE p.id = %s
+                """,
                 (product_id,)
             )
             product = cursor.fetchone()
@@ -50,9 +67,12 @@ def products():
                 SELECT
                     p.id, p.name, p.description, p.price, p.stock_quantity,
                     p.created_at, p.updated_at,
-                    ct.name AS category
+                    ct.name AS category,
+                    pi.url AS image
                 FROM products p
                 JOIN category_types ct ON p.category_type_id = ct.id
+                LEFT JOIN product_images pi
+                  ON pi.product_id = p.id AND pi.is_primary = 1
             """
             params = []
             if search_query:
@@ -64,21 +84,12 @@ def products():
             query += " ORDER BY p.created_at DESC"
             cursor.execute(query, tuple(params))
             products = cursor.fetchall()
-
-            # Fetch distinct category names for filter dropdown
-            cursor.execute("""
-                SELECT DISTINCT ct.name AS category
-                FROM category_types ct
-                JOIN products p ON p.category_type_id = ct.id
-            """)
-            categories = cursor.fetchall()
     finally:
         conn.close()
 
     return render_template(
         "product.html",
         products=products,
-        categories=categories,
         selected=category,
         search_query=search_query
     )
@@ -89,18 +100,51 @@ def create_product():
         flash("관리자 권한이 필요합니다.")
         return redirect(url_for("product_bp.products"))
 
+    # GET/POST 모두 need categories for dropdown
+    conn = current_app.get_db_connection()
+    try:
+        with conn.cursor(dictionary=True) as cursor:
+            cursor.execute("SELECT id, name FROM categories ORDER BY name")
+            categories = cursor.fetchall()
+            cursor.execute("SELECT id, category_id, name FROM category_types ORDER BY name")
+            types = cursor.fetchall()
+    finally:
+        conn.close()
+
+    # Group types under each category
+    grouped = defaultdict(list)
+    for t in types:
+        grouped[t["category_id"]].append(t)
+    for cat in categories:
+        cat["types"] = grouped.get(cat["id"], [])
+
     if request.method == "POST":
         name     = request.form["name"]
         category_type_id = request.form["category_type_id"]
         price    = request.form["price"]
-        image    = request.form["image"]
+        description     = request.form["description"]
+        stock_quantity  = request.form["stock_quantity"]
+        # 파일 업로드 처리
+        file = request.files.get("image")
+        if not file or file.filename == "":
+            flash("이미지를 업로드해주세요.")
+            return redirect(url_for("product_bp.create_product"))
+        filename = secure_filename(file.filename)
+        file_path = os.path.join(UPLOAD_FOLDER, filename)
+        file.save(file_path)
 
         conn = current_app.get_db_connection()
         try:
             with conn.cursor() as cursor:
                 cursor.execute(
-                    "INSERT INTO products (name, category_type_id, price, image) VALUES (%s, %s, %s, %s)",
-                    (name, category_type_id, price, image)
+                    "INSERT INTO products (name, category_type_id, description, price, stock_quantity) VALUES (%s, %s, %s, %s, %s)",
+                    (name, category_type_id, description, price, stock_quantity)
+                )
+                product_id = cursor.lastrowid
+            with conn.cursor() as cursor:
+                cursor.execute(
+                    "INSERT INTO product_images (product_id, url, is_primary) VALUES (%s, %s, %s)",
+                    (product_id, filename, 1)
                 )
             conn.commit()
         finally:
@@ -109,8 +153,8 @@ def create_product():
         flash("상품이 등록되었습니다.")
         return redirect(url_for("product_bp.products"))
 
-    # GET 요청일 때만 폼 페이지 렌더
-    return render_template("create_product.html")
+    # GET 요청 시 폼 렌더, categories 전달
+    return render_template("create_product.html", categories=categories)
 
 @product_bp.route("/product/delete/<int:product_id>", methods=["POST"], endpoint="delete_product")
 def delete_product(product_id):

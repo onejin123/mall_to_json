@@ -8,7 +8,18 @@ def index():
     try:
         # dictionary=True 옵션을 주면 fetchall() 결과가 dict 리스트로 들어옴
         with conn.cursor(dictionary=True) as cursor:
-            cursor.execute("SELECT * FROM products")
+            cursor.execute(
+                """
+                SELECT
+                    p.id, p.name, p.price,
+                    pi.url AS image
+                FROM products p
+                LEFT JOIN product_images pi
+                  ON pi.product_id = p.id AND pi.is_primary = 1
+                ORDER BY p.created_at DESC
+                LIMIT 20
+                """
+            )
             products = cursor.fetchall()
     finally:
         conn.close()

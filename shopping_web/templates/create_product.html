@@ -2,11 +2,49 @@
 
 <div class="form-box">
   <h2>새 상품 등록</h2>
-  <form method="post">
-    <input type="text"     name="name"     placeholder="상품명"    required>
-    <input type="text"     name="category" placeholder="카테고리"  required>
-    <input type="number"   name="price"    placeholder="가격"      step="0.01" required>
-    <input type="text"     name="image"    placeholder="이미지 파일명" required>
+  <form method="post" enctype="multipart/form-data">
+    <input
+      type="text"
+      name="name"
+      placeholder="상품명"
+      required
+    >
+    <select name="category_type_id" required>
+      <option value="" disabled selected>카테고리를 선택하세요</option>
+      {% for cat in categories %}
+        <optgroup label="{{ cat.name }}">
+          {% for t in cat.types %}
+            <option value="{{ t.id }}">{{ t.name }}</option>
+          {% endfor %}
+        </optgroup>
+      {% endfor %}
+    </select>
+    <textarea
+      name="description"
+      placeholder="상품 설명"
+      rows="4"
+      required
+    ></textarea>
+    <input
+      type="number"
+      name="stock_quantity"
+      placeholder="재고 수량"
+      min="0"
+      required
+    >
+    <input
+      type="number"
+      name="price"
+      placeholder="가격"
+      step="0.01"
+      required
+    >
+    <input
+      type="file"
+      name="image"
+      accept="image/*"
+      required
+    >
     <button type="submit">등록</button>
   </form>
 </div>
