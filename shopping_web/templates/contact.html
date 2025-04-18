@@ -5,99 +5,132 @@
   <title>고객센터</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
   <style>
-    .container { display: flex; width: 1000px; margin: 80px auto; }
-    .sidebar { width: 200px; padding-right: 20px; border-right: 1px solid #ddd; }
-    .sidebar ul { list-style: none; padding: 0; }
-    .sidebar a { text-decoration: none; color: #333; }
-    .sidebar a.active { font-weight: bold; color: #007bff; }
+    body {
+      font-family: "Courier New", monospace;
+    }
 
-    .content { flex: 1; padding-left: 40px; }
-    .post { border-bottom: 1px solid #eee; padding: 10px 0; cursor: pointer; }
-    .post-header { display: flex; justify-content: space-between; font-weight: bold; }
-    .post-meta { font-size: 13px; color: #777; text-align: right; }
-    .post-body { display: none; margin-top: 10px; font-size: 14px; }
-    .answer { background: #f7f7f7; padding: 10px; margin-top: 10px; border-left: 4px solid #007bff; }
+    .container {
+      display: flex;
+      width: 1000px;
+      margin: 80px auto;
+    }
 
-    .post-buttons { text-align: right; margin-top: 10px; }
-    .post-buttons button {
-      padding: 5px 10px; background: #333; color: white; border: none; font-size: 13px;
+    .sidebar {
+      width: 200px;
+      border-right: 1px solid #ddd;
+      padding-right: 20px;
+    }
+
+    .sidebar ul {
+      list-style: none;
+      padding-left: 0;
+    }
+
+    .sidebar li {
+      margin-bottom: 15px;
+    }
+
+    .sidebar a {
+      text-decoration: none;
+      color: #333;
+    }
+
+    .sidebar a.active {
+      font-weight: bold;
+      color: #007bff;
+    }
+
+    .content {
+      flex: 1;
+      padding-left: 40px;
+    }
+
+    .post {
+      border-bottom: 1px solid #eee;
+      padding: 10px 0;
+      text-decoration: none;
+      color: inherit;
+      display: block;
+    }
+
+    .post-header {
+      display: flex;
+      justify-content: space-between;
+      font-weight: bold;
+    }
+
+    .post-meta {
+      font-size: 13px;
+      color: #777;
+      text-align: right;
+    }
+
+    .write-btn-wrapper {
+      text-align: right;
+      margin-top: 20px;
     }
 
     .write-btn {
-      position: fixed; right: 60px; bottom: 40px;
-      background: none; color: #007bff; border: none; font-size: 16px;
+      font-size: 15px;
+      color: #333;
+      text-decoration: none;
+      background: none;
+      padding: 8px 12px;
+      border: 1px solid #aaa;
+      border-radius: 4px;
+      font-family: "Courier New", monospace;
+      cursor: pointer;
+    }
+
+    .write-btn:hover {
+      background-color: #f0f0f0;
     }
   </style>
 </head>
 <body>
-
   {% include 'navbar.html' %}
 
   <div class="container">
+    <!-- 사이드바 -->
     <div class="sidebar">
       <ul>
-        <li><a href="{{ url_for('contact_bp.contact', type='NOTICE') }}" class="{{ 'active' if board_type == 'NOTICE' else '' }}">📢 공지사항</a></li>
-        <li><a href="{{ url_for('contact_bp.contact', type='FAQ') }}" class="{{ 'active' if board_type == 'FAQ' else '' }}">❓ FAQ</a></li>
-        <li><a href="{{ url_for('contact_bp.contact', type='QNA') }}" class="{{ 'active' if board_type == 'QNA' else '' }}">✉️ 1:1 문의</a></li>
+        <li><a href="{{ url_for('contact_bp.contact', type='NOTICE') }}" class="{{ 'active' if board_type == 'NOTICE' else '' }}">notice</a></li>
+        <li><a href="{{ url_for('contact_bp.contact', type='FAQ') }}" class="{{ 'active' if board_type == 'FAQ' else '' }}">FAQ</a></li>
+        <li><a href="{{ url_for('contact_bp.contact', type='QNA') }}" class="{{ 'active' if board_type == 'QNA' else '' }}">QnA</a></li>
       </ul>
     </div>
 
+    <!-- 게시글 리스트 -->
     <div class="content">
       <h2>
-        {% if board_type == 'NOTICE' %}공지사항
-        {% elif board_type == 'FAQ' %}자주 묻는 질문
-        {% elif board_type == 'QNA' %}1:1 문의
+        {% if board_type == 'NOTICE' %}notice
+        {% elif board_type == 'FAQ' %}FAQ
+        {% elif board_type == 'QNA' %}QnA
         {% endif %}
       </h2>
 
       {% if posts %}
         {% for post in posts %}
-        <div class="post" onclick="togglePost(this)">
+        <a href="{{ url_for('contact_bp.inquiry_detail', inquiry_id=post['id']) }}" class="post">
           <div class="post-header">
             <div class="post-title">{{ post['title'] }}</div>
-            <div class="post-meta">{{ post['user_id'] }} | {{ post['created_at'] }}</div>
+            <div class="post-meta">{{ post['nickname'] }} | {{ post['created_at'] }}</div>
           </div>
-
-          <div class="post-body">
-            <p>{{ post['content'] }}</p>
-
-            {% if post['answer'] %}
-              <div class="answer">
-                <strong>답변:</strong><br>
-                {{ post['answer'] }}
-              </div>
-            {% endif %}
-
-            {% if session.get('is_admin') or session.get('user_id') == post['user_id'] %}
-              <div class="post-buttons">
-                <form method="get" action="{{ url_for('contact_bp.edit_post', post_id=post['id']) }}" style="display:inline;">
-                  <button type="submit">✏️ 수정</button>
-                </form>
-                <form method="post" action="{{ url_for('contact_bp.delete_post', post_id=post['id']) }}" style="display:inline;">
-                  <button type="submit" onclick="return confirm('정말 삭제하시겠습니까?');">🗑️ 삭제</button>
-                </form>
-              </div>
-            {% endif %}
-          </div>
-        </div>
+        </a>
         {% endfor %}
       {% else %}
         <p>게시글이 없습니다.</p>
       {% endif %}
+
+      <!-- 글쓰기 버튼 (QnA일 때만 표시) -->
+      {% if board_type == 'QNA' and session.get('user_id') %}
+        <div class="write-btn-wrapper">
+          <form action="{{ url_for('contact_bp.write_post', type='QNA') }}">
+            <button type="submit" class="write-btn">Write a post</button>
+          </form>
+        </div>
+      {% endif %}
     </div>
   </div>
-
-  {% if board_type == 'QNA' and session.get('user_id') %}
-    <form action="{{ url_for('contact_bp.write_post', type='QNA') }}">
-      <button type="submit" class="write-btn">✏️ 글쓰기</button>
-    </form>
-  {% endif %}
-
-  <script>
-    function togglePost(el) {
-      const body = el.querySelector(".post-body");
-      body.style.display = body.style.display === "block" ? "none" : "block";
-    }
-  </script>
 </body>
 </html>

@@ -15,6 +15,7 @@ DB_CONFIG = {
     "charset":  "utf8mb4",
 }
 
+
 # 커넥션 풀 생성 (worker 수 ≥ pool_size 권장)
 pool = pooling.MySQLConnectionPool(
     pool_name="mall_pool",

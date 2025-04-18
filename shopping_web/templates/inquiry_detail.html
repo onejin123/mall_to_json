@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>{{ inquiry.title }}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <style>
+    .detail-container {
+      width: 800px;
+      margin: 80px auto;
+      padding: 30px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      background: #fafafa;
+    }
+    .detail-container h2 {
+      margin-bottom: 10px;
+    }
+    .meta {
+      color: #777;
+      font-size: 14px;
+      margin-bottom: 20px;
+    }
+    .content {
+      font-size: 16px;
+      margin-bottom: 30px;
+      white-space: pre-wrap;
+    }
+    .answer-box {
+      background: #f0f4ff;
+      padding: 15px;
+      border-left: 5px solid #007bff;
+      margin-top: 30px;
+    }
+    .post-buttons {
+      text-align: right;
+      margin-top: 20px;
+    }
+    .post-buttons button {
+      padding: 8px 15px;
+      margin-left: 10px;
+      background-color: #333;
+      color: white;
+      border: none;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+    img.attached-image {
+      max-width: 100%;
+      margin-top: 20px;
+      border: 1px solid #ddd;
+    }
+  </style>
+</head>
+<body>
+  {% include 'navbar.html' %}
+
+  <div class="detail-container">
+    <h2>{{ inquiry.title }}</h2>
+    <div class="meta">Writer: {{ inquiry.nickname }} | Date: {{ inquiry.created_at }}</div>
+
+    <div class="content">
+      {{ inquiry.content | safe }}
+    </div>
+
+    {% if inquiry.image_path %}
+      <img src="{{ url_for('static', filename=inquiry.image_path) }}" alt="첨부 이미지" class="attached-image">
+    {% endif %}
+
+    {% if inquiry.answer %}
+      <div class="answer-box">
+        <strong>Answer</strong><br>
+        {{ inquiry.answer }}
+      </div>
+    {% endif %}
+
+    {% if session.get('is_admin') or session.get('user_id') == inquiry.user_id %}
+      <div class="post-buttons">
+        <form method="get" action="{{ url_for('contact_bp.edit_post', inquiry_id=inquiry.id) }}" style="display:inline;">
+          <button type="submit">Fix</button>
+        </form>
+        <form method="post" action="{{ url_for('contact_bp.delete_post', inquiry_id=inquiry.id) }}" style="display:inline;">
+          <button type="submit" onclick="return confirm('정말 삭제하시겠습니까?');">Delete</button>
+        </form>
+      </div>
+    {% endif %}
+  </div>
+</body>
+</html>

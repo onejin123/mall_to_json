@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <title>QNA 글쓰기</title>
+  <title>{{ '문의 수정' if inquiry else '1:1 문의 작성' }}</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
   <style>
     .contact-container {
@@ -51,25 +51,43 @@
       margin-bottom: 5px;
       display: block;
     }
+
+    .current-image {
+      margin-bottom: 15px;
+    }
+
+    .current-image img {
+      max-width: 100%;
+      border: 1px solid #ccc;
+      margin-top: 5px;
+    }
   </style>
 </head>
 <body>
   {% include 'navbar.html' %}
 
   <div class="contact-container">
-    <h2>1:1 문의 작성</h2>
+    <h2>{{ 'Fix Qna' if inquiry else 'Qna' }}</h2>
 
     <form method="post" enctype="multipart/form-data">
-      <label for="title">제목</label>
-      <input type="text" name="title" id="title" placeholder="제목을 입력하세요" required>
+      <label for="title">title</label>
+      <input type="text" name="title" id="title" placeholder="title" required
+             value="{{ inquiry.title if inquiry else '' }}">
 
-      <label for="content">내용</label>
-      <textarea name="content" id="content" rows="8" placeholder="문의 내용을 입력해주세요" required></textarea>
+      <label for="content">detail</label>
+      <textarea name="content" id="content" rows="8" placeholder="type inquiry" required>{{ inquiry.content if inquiry else '' }}</textarea>
 
-      <label for="image">이미지 첨부 </label>
+      {% if inquiry and inquiry.image_path %}
+        <div class="current-image">
+          <label>현재 첨부 이미지</label>
+          <img src="{{ url_for('static', filename=inquiry.image_path) }}" alt="첨부 이미지">
+        </div>
+      {% endif %}
+
+      <label for="image">Attach image{% if inquiry and inquiry.image_path %}(기존 이미지 교체 시에만 선택){% endif %}</label>
       <input type="file" name="image" id="image" accept="image/*">
 
-      <button type="submit">문의 등록</button>
+      <button type="submit">{{ 'Fix' if inquiry else 'Submit' }}</button>
     </form>
   </div>
 </body>
