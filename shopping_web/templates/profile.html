@@ -2,66 +2,121 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <title>my page</title>
+  <title>마이페이지</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='./css/style.css') }}">
   <style>
-    .info-box {
-      width: 400px;
+    .container {
+      display: flex;
+      width: 1000px;
       margin: 80px auto;
-      padding: 30px;
-      border: 1px solid #ccc;
-      box-shadow: 0 0 10px rgba(0,0,0,0.05);
     }
 
-    .info-box h2 {
-      text-align: center;
-      margin-bottom: 30px;
-      color: #333;
+    .sidebar {
+      width: 200px;
+      border-right: 1px solid #ccc;
+      padding-right: 20px;
     }
 
-    .info-box p {
-      font-size: 16px;
+    .sidebar ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    .sidebar li {
       margin-bottom: 15px;
     }
 
-    .info-box .label {
-      font-weight: bold;
-      display: inline-block;
-      width: 80px;
-    }
-
-    .info-box a {
-      display: block;
-      text-align: center;
-      margin-top: 30px;
+    .sidebar a {
       text-decoration: none;
       color: #333;
+    }
+
+    .sidebar a.active {
+      font-weight: bold;
+      color: #007bff;
+    }
+
+    .content {
+      flex: 1;
+      padding-left: 40px;
+    }
+
+    .info-box, .orders-box {
+      border: 1px solid #ccc;
+      padding: 30px;
+      border-radius: 6px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+      background-color: #f9f9f9;
+    }
+
+    .info-box h2,
+    .orders-box h2 {
+      margin-bottom: 20px;
+    }
+
+    .info-box p,
+    .orders-box p {
+      font-size: 16px;
+      margin-bottom: 10px;
+    }
+
+    .label {
+      font-weight: bold;
+      display: inline-block;
+      width: 100px;
+    }
+
+    .orders-box ul {
+      padding-left: 0;
+      list-style: none;
+    }
+
+    .orders-box li {
+      margin-bottom: 12px;
+      border-bottom: 1px solid #eee;
+      padding-bottom: 8px;
     }
   </style>
 </head>
 <body>
   {% include 'navbar.html' %}
 
+  <div class="container">
+    <!-- 🔹 사이드바 -->
+    <div class="sidebar">
+      <ul>
+        <li><a href="{{ url_for('auth_bp.profile', tab='info') }}" class="{{ 'active' if tab == 'info' else '' }}">내 정보</a></li>
+        <li><a href="{{ url_for('auth_bp.profile', tab='orders') }}" class="{{ 'active' if tab == 'orders' else '' }}">주문 내역</a></li>
+      </ul>
+    </div>
 
-  <!-- 🔹 내 정보 박스 -->
-  <div class="info-box">
-    <h2>my page</h2>
-
-    {% with messages = get_flashed_messages() %}
-      {% if messages %}
-        <ul>
-          {% for message in messages %}
-            <li style="color: red;">{{ message }}</li>
+    <!-- 🔹 본문 영역 -->
+    <div class="content">
+      {% if tab == 'info' %}
+      <div class="info-box">
+        <h2>내 정보</h2>
+        <p><span class="label">이름</span>: {{ user['nickname'] }}</p>
+        <p><span class="label">이메일</span>: {{ user['email'] }}</p>
+        <p><span class="label">전화번호</span>: {{ user['phone'] or '미입력' }}</p>
+      </div>
+      {% elif tab == 'orders' %}
+      <div class="orders-box">
+        <h2>주문 내역</h2>
+        {% if orders %}
+          {% for order in orders %}
+            <div style="border:1px solid #ccc; padding:10px; margin-bottom:10px;">
+              <strong>주문번호: {{ order.order_id }}</strong><br>
+              주문일자: {{ order.created_at }}<br>
+              총액: {{ order.total_amount }} 원<br>
+              상태: {{ order.status }}<br>
+              <p>📦 상품: {{ order.product_name }} (수량: {{ order.quantity }}, 단가: {{ order.unit_price }})</p>
+            </div>
           {% endfor %}
-        </ul>
-      {% endif %}
-    {% endwith %}
-
-    <p><span class="label">name</span>: {{ user['name'] }}</p>
-    <p><span class="label">email</span>: {{ user['email'] }}</p>
-
-    <a href="{{ url_for('main_bp.index') }}">← go to main</a>
+        {% else %}
+          <p>주문 내역이 없습니다.</p>
+        {% endif %}
+    </div>
+    {% endif %}
   </div>
-
 </body>
 </html>

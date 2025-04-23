@@ -107,23 +107,41 @@ def logout():
 # 프로필
 # ─────────────────────────────────────────────────────────────────────────────
 @auth_bp.route("/profile", endpoint="profile")
-def profile():
+def mypage():
     if "user_id" not in session:
+        flash("로그인이 필요합니다.")
         return redirect(url_for("auth_bp.login"))
 
-    user_id = session["user_id"]
-    conn = current_app.get_db_connection()
-    try:
-        with conn.cursor(dictionary=True) as cursor:
-            cursor.execute(
-                "SELECT * FROM users WHERE id = %s",
-                (user_id,)
-            )
-            user = cursor.fetchone()
-    finally:
-        conn.close()
+    tab = request.args.get("tab", "info")
 
-    return render_template("profile.html", user=user)
+    conn = current_app.get_db_connection()
+    with conn.cursor(dictionary=True) as cur:
+        # 사용자 정보 가져오기
+        cur.execute("""
+            SELECT u.*, r.name AS role_name
+            FROM users u
+            JOIN roles r ON u.role_id = r.id
+            WHERE u.id = %s
+        """, (session["user_id"],))
+        user = cur.fetchone()
+
+        # 주문 정보 가져오기 (tab이 'orders'일 경우에만)
+        orders = []
+        if tab == "orders":
+            cur.execute("""
+                SELECT o.id AS order_id, o.created_at, o.total_amount, o.status,
+                       p.name AS product_name, oi.quantity, oi.unit_price
+                FROM orders o
+                JOIN order_items oi ON o.id = oi.order_id
+                JOIN products p ON oi.product_id = p.id
+                WHERE o.user_id = %s
+                ORDER BY o.created_at DESC
+            """, (session["user_id"],))
+            orders = cur.fetchall()
+
+    conn.close()
+    return render_template("profile.html", tab=tab, user=user, orders=orders)
+
 
 # Existing view functions...
 
