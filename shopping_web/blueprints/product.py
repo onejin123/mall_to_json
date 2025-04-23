@@ -174,13 +174,33 @@ def delete_product(product_id):
     conn = current_app.get_db_connection()
     try:
         with conn.cursor() as cursor:
+            # 1. order_items에서 참조 제거
+            cursor.execute(
+                "DELETE FROM order_items WHERE product_id = %s",
+                (product_id,)
+            )
+
+            # 2. carts에서 참조 제거
+            cursor.execute(
+                "DELETE FROM carts WHERE product_id = %s",
+                (product_id,)
+            )
+
+            # 3. product_images에서 참조 제거
+            cursor.execute(
+                "DELETE FROM product_images WHERE product_id = %s",
+                (product_id,)
+            )
+
+            # 4. products에서 최종 삭제
             cursor.execute(
                 "DELETE FROM products WHERE id = %s",
                 (product_id,)
             )
+
         conn.commit()
     finally:
         conn.close()
 
-    flash("상품이 삭제되었습니다.")
+    flash("상품이 완전히 삭제되었습니다.")
     return redirect(url_for("product_bp.products"))
