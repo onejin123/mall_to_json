@@ -113,10 +113,10 @@ def mypage():
         return redirect(url_for("auth_bp.login"))
 
     tab = request.args.get("tab", "info")
-
     conn = current_app.get_db_connection()
+
     with conn.cursor(dictionary=True) as cur:
-        # 사용자 정보 가져오기
+        # 사용자 정보
         cur.execute("""
             SELECT u.*, r.name AS role_name
             FROM users u
@@ -125,7 +125,6 @@ def mypage():
         """, (session["user_id"],))
         user = cur.fetchone()
 
-        # 주문 정보 가져오기 (tab이 'orders'일 경우에만)
         orders = []
         if tab == "orders":
             cur.execute("""
@@ -137,13 +136,59 @@ def mypage():
                 WHERE o.user_id = %s
                 ORDER BY o.created_at DESC
             """, (session["user_id"],))
-            orders = cur.fetchall()
+            raw_orders = cur.fetchall()
+
+            # created_at 문자열을 datetime 객체로 변환
+            for order in raw_orders:
+                if isinstance(order["created_at"], str):
+                    order["created_at"] = datetime.strptime(order["created_at"], "%Y-%m-%d %H:%M:%S")
+                orders.append(order)
 
     conn.close()
     return render_template("profile.html", tab=tab, user=user, orders=orders)
 
 
 # Existing view functions...
+# ─────────────────────────────────────────────────────────────────────────────
+# 주문취소
+# ─────────────────────────────────────────────────────────────────────────────
+from datetime import datetime
+@auth_bp.route("/cancel_order/<int:order_id>", methods=["POST"], endpoint="cancel_order")
+def cancel_order(order_id):
+    if "user_id" not in session:
+        flash("로그인이 필요합니다.")
+        return redirect(url_for("auth_bp.login"))
+
+    conn = current_app.get_db_connection()
+    try:
+        with conn.cursor(dictionary=True) as cur:
+            # 주문이 본인의 것인지 + 상태 확인
+            cur.execute("""
+                SELECT status, user_id FROM orders
+                WHERE id = %s
+            """, (order_id,))
+            order = cur.fetchone()
+
+            if not order or order["user_id"] != session["user_id"]:
+                flash("잘못된 접근입니다.")
+                return redirect(url_for("auth_bp.profile", tab="orders"))
+
+            if order["status"] not in ("PENDING", "PAID"):
+                flash("이 주문은 취소할 수 없습니다.")
+                return redirect(url_for("auth_bp.profile", tab="orders"))
+
+            # 주문 상태 업데이트
+            cur.execute("""
+                UPDATE orders SET status = 'CANCELLED'
+                WHERE id = %s
+            """, (order_id,))
+            conn.commit()
+
+            flash("주문이 취소되었습니다.")
+    finally:
+        conn.close()
+
+    return redirect(url_for("auth_bp.profile", tab="orders"))
 
 # ────────────────────────────────────────────────────────────────────────────
 # 관리자: 전체 사용자 목록 조회

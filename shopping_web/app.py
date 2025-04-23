@@ -7,11 +7,11 @@ from mysql.connector import pooling
 # DB 헬퍼 – MySQL
 # ──────────────────────────────────────────────
 DB_CONFIG = {
-    "host":     os.getenv("MYSQL_HOST", "localhost"),
+    "host":     os.getenv("MYSQL_HOST", "192.168.219.168"),
     "port":     int(os.getenv("MYSQL_PORT", 3306)),
-    "user":     os.getenv("MYSQL_USER", "mall_user"),
-    "password": os.getenv("MYSQL_PASSWORD", "mall_pass"),
-    "database": os.getenv("MYSQL_DB", "Shoppingmall"),
+    "user":     os.getenv("MYSQL_USER", "user1"),
+    "password": os.getenv("MYSQL_PASSWORD", "1234"),
+    "database": os.getenv("MYSQL_DB", "mall"),
     "charset":  "utf8mb4",
 }
 

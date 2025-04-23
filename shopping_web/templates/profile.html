@@ -66,15 +66,24 @@
       width: 100px;
     }
 
-    .orders-box ul {
-      padding-left: 0;
-      list-style: none;
+    .orders-box div.order-group {
+      margin-bottom: 20px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid #ddd;
     }
 
-    .orders-box li {
-      margin-bottom: 12px;
-      border-bottom: 1px solid #eee;
-      padding-bottom: 8px;
+    .cancel-button {
+      margin-top: 10px;
+      background-color: #ff4d4d;
+      color: white;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .cancel-button:hover {
+      background-color: #e60000;
     }
   </style>
 </head>
@@ -103,20 +112,33 @@
       <div class="orders-box">
         <h2>주문 내역</h2>
         {% if orders %}
+          {% set current_date = None %}
           {% for order in orders %}
-            <div style="border:1px solid #ccc; padding:10px; margin-bottom:10px;">
+            {% if current_date != order.created_at.strftime('%Y-%m-%d') %}
+              {% set current_date = order.created_at.strftime('%Y-%m-%d') %}
+              <h4>{{ current_date }}</h4>
+            {% endif %}
+
+            <div class="order-group">
               <strong>주문번호: {{ order.order_id }}</strong><br>
-              주문일자: {{ order.created_at }}<br>
+              주문일시: {{ order.created_at }}<br>
               총액: {{ order.total_amount }} 원<br>
               상태: {{ order.status }}<br>
-              <p>📦 상품: {{ order.product_name }} (수량: {{ order.quantity }}, 단가: {{ order.unit_price }})</p>
+              <p>📦 상품: {{ order.product_name }} (수량: {{ order.quantity }}, 단가: {{ order.unit_price }} 원)</p>
+
+              {% if order.status in ['PENDING', 'PAID'] %}
+              <form method="post" action="{{ url_for('auth_bp.cancel_order', order_id=order.order_id) }}">
+                <button type="submit" class="cancel-button" onclick="return confirm('정말 주문을 취소하시겠습니까?');">❌ 주문 취소</button>
+              </form>
+              {% endif %}
             </div>
           {% endfor %}
         {% else %}
           <p>주문 내역이 없습니다.</p>
         {% endif %}
+      </div>
+      {% endif %}
     </div>
-    {% endif %}
   </div>
 </body>
 </html>
