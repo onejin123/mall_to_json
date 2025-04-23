@@ -4,6 +4,7 @@ from flask import (
 )
 import mysql.connector
 from mysql.connector import errors
+from werkzeug.utils import secure_filename
 import os
 
 contact_bp = Blueprint("contact_bp", __name__)
@@ -31,12 +32,9 @@ def contact():
     return render_template("contact.html", board_type=board_type, posts=posts)
 
 
-
 # ─────────────────────────────────────────────────────────────────────────────
 # 글쓰기
 # ─────────────────────────────────────────────────────────────────────────────
-from werkzeug.utils import secure_filename
-
 @contact_bp.route("/contact/write", methods=["GET", "POST"], endpoint="write_post")
 def write_post():
     if "user_id" not in session:
@@ -51,41 +49,40 @@ def write_post():
         user_id = session["user_id"]
         file    = request.files.get("image")
 
+        # 관리자는 type을 선택할 수 있음
+        if session.get("is_admin"):
+            board_type = request.form.get("type", board_type)
+
         conn = current_app.get_db_connection()
         try:
             with conn.cursor() as cur:
-                # 먼저 글을 insert
                 cur.execute("""
                     INSERT INTO inquiries (user_id, type, title, content)
                     VALUES (%s, %s, %s, %s)
                 """, (user_id, board_type, title, content))
                 conn.commit()
 
-                # 방금 삽입된 글 id 가져오기
                 cur.execute("SELECT LAST_INSERT_ID()")
                 post_id = cur.fetchone()[0]
 
-                # 이미지 업로드 처리
                 if file and file.filename:
                     filename = secure_filename(file.filename)
-                    ext = os.path.splitext(filename)[1]  # .jpg, .png 등
+                    ext = os.path.splitext(filename)[1]
                     save_name = f"{post_id}{ext}"
                     save_path = os.path.join(current_app.root_path, "static", "inquiries_image", save_name)
-
                     file.save(save_path)
 
                     image_db_path = f"inquiries_image/{save_name}"
-                    # 이미지 경로 업데이트
                     cur.execute("UPDATE inquiries SET image_path = %s WHERE id = %s", (image_db_path, post_id))
                     conn.commit()
-
         finally:
             conn.close()
 
-        flash("문의가 등록되었습니다.")
+        
         return redirect(url_for("contact_bp.contact", type=board_type))
 
     return render_template("write_post.html", board_type=board_type)
+
 
 # ─────────────────────────────────────────────────────────────────────────────
 # 게시글 수정
@@ -106,7 +103,6 @@ def edit_post(inquiry_id):
                 flash("글을 찾을 수 없습니다.")
                 return redirect(url_for("contact_bp.contact", type="QNA"))
 
-            # 권한 체크
             if session["user_id"] != inquiry["user_id"] and not session.get("is_admin"):
                 flash("수정 권한이 없습니다.")
                 return redirect(url_for("contact_bp.inquiry_detail", inquiry_id=inquiry_id))
@@ -114,18 +110,14 @@ def edit_post(inquiry_id):
             if request.method == "POST":
                 title   = request.form["title"]
                 content = request.form["content"]
-
-                cursor.execute(
-                    "UPDATE inquiries SET title = %s, content = %s WHERE id = %s",
-                    (title, content, inquiry_id)
-                )
+                cursor.execute("UPDATE inquiries SET title = %s, content = %s WHERE id = %s",
+                               (title, content, inquiry_id))
                 conn.commit()
                 flash("게시글이 수정되었습니다.")
                 return redirect(url_for("contact_bp.inquiry_detail", inquiry_id=inquiry_id))
     finally:
         conn.close()
 
-    # write_post.html 재사용
     return render_template("write_post.html", board_type=inquiry["type"], inquiry=inquiry)
 
 
@@ -148,12 +140,10 @@ def delete_post(inquiry_id):
                 flash("게시글이 존재하지 않습니다.")
                 return redirect(url_for("contact_bp.contact", type="QNA"))
 
-            # 작성자 또는 관리자만 삭제 가능
             if session["user_id"] != inquiry["user_id"] and not session.get("is_admin"):
                 flash("삭제 권한이 없습니다.")
                 return redirect(url_for("contact_bp.inquiry_detail", inquiry_id=inquiry_id))
 
-            # 첨부 이미지가 있다면 삭제
             if inquiry.get("image_path"):
                 image_path = os.path.join(current_app.root_path, "static", inquiry["image_path"])
                 if os.path.exists(image_path):

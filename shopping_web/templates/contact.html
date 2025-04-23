@@ -122,10 +122,10 @@
         <p>게시글이 없습니다.</p>
       {% endif %}
 
-      <!-- 글쓰기 버튼 (QnA일 때만 표시) -->
-      {% if board_type == 'QNA' and session.get('user_id') %}
+      <!-- 글쓰기 버튼: QNA는 일반 사용자도 표시, 그 외는 관리자만 표시 -->
+      {% if (board_type == 'QNA' and session.get('user_id')) or session.get('is_admin') %}
         <div class="write-btn-wrapper">
-          <form action="{{ url_for('contact_bp.write_post', type='QNA') }}">
+          <form action="{{ url_for('contact_bp.write_post', type=board_type) }}">
             <button type="submit" class="write-btn">Write a post</button>
           </form>
         </div>
