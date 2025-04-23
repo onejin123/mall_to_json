@@ -49,7 +49,7 @@ def checkout():
             # 주문 저장
             with conn.cursor() as cur:
                 cur.execute(
-                    "INSERT INTO orders (user_id, address, payment_method, total_price) VALUES (%s, %s, %s, %s)",
+                    "INSERT INTO orders (user_id, address, payment_method, total_amount) VALUES (%s, %s, %s, %s)",
                     (user_id, address, payment_method, total_price)
                 )
                 order_id = cur.lastrowid
@@ -57,7 +57,7 @@ def checkout():
                 # 상세 항목 저장
                 for p in products:
                     cur.execute(
-                        "INSERT INTO order_items (order_id, product_id, quantity, price) VALUES (%s, %s, %s, %s)",
+                        "INSERT INTO order_items (order_id, product_id, quantity, unit_price) VALUES (%s, %s, %s, %s)",
                         (order_id, p["id"], p["quantity"], p["subtotal"])
                     )
             conn.commit()

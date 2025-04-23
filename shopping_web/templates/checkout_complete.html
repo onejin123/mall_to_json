@@ -52,8 +52,8 @@
         <tr>
           <td>{{ item['name'] }}</td>
           <td>{{ item['quantity'] }}</td>
-          <td>{{ item['price'] }}&#8361</td>
-          <td>{{ item['quantity'] * item['price'] }}&#8361</td>
+          <td>{{ item['unit_price'] }}&#8361</td>
+          <td>{{ item['quantity'] * item['unit_price'] }}&#8361</td>
         </tr>
         {% endfor %}
       </tbody>

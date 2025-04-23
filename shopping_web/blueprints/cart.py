@@ -47,10 +47,12 @@ def cart():
     try:
         with conn.cursor(dictionary=True) as cursor:
             for item in cart_items:
-                cursor.execute(
-                    "SELECT * FROM products WHERE id = %s",
-                    (item["product_id"],)
-                )
+                cursor.execute("""
+                                    SELECT p.id, p.name, p.price, pi.url AS image
+                                    FROM products p
+                                    LEFT JOIN product_images pi ON pi.product_id = p.id AND pi.is_primary = 1
+                                    WHERE p.id = %s
+                                """, (item["product_id"],))
                 product = cursor.fetchone()
                 if product:
                     qty       = int(item["quantity"])

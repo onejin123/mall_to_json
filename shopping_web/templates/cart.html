@@ -59,7 +59,7 @@
     {% if products %}
     {% for item in products %}
     <div class="cart-item">
-      <img src="{{ url_for('static', filename='images/' + item.image) }}">
+      <img src="{{ url_for('static', filename='uploads/' + item['image']) }}" width="100%">
       <div class="cart-item-info">
         <strong>{{ item.name }}</strong><br>
     

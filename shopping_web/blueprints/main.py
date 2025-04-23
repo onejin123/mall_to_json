@@ -17,7 +17,7 @@ def index():
                 LEFT JOIN product_images pi
                   ON pi.product_id = p.id AND pi.is_primary = 1
                 ORDER BY p.created_at DESC
-                LIMIT 20
+                LIMIT 5
                 """
             )
             products = cursor.fetchall()
