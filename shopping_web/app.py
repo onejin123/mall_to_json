@@ -9,14 +9,13 @@ from mysql.connector import pooling
 DB_CONFIG = {
     "host":     os.getenv("MYSQL_HOST", "localhost"),
     "port":     int(os.getenv("MYSQL_PORT", 3306)),
-    "user":     os.getenv("MYSQL_USER", "root"),
-    "password": os.getenv("MYSQL_PASSWORD", "0000"),
-    "database": os.getenv("MYSQL_DB", "mall"),
+    "user":     os.getenv("MYSQL_USER", "mall_user"),
+    "password": os.getenv("MYSQL_PASSWORD", "mall_pass"),
+    "database": os.getenv("MYSQL_DB", "Shoppingmall"),
     "charset":  "utf8mb4",
 }
 
-
-# 커넥션 풀 생성 (worker 수 ≥ pool_size 권장)
+# 커넥션 풀 생성 (worker 수 ≥ pool_size 권장)
 pool = pooling.MySQLConnectionPool(
     pool_name="mall_pool",
     pool_size=5,
@@ -25,7 +24,6 @@ pool = pooling.MySQLConnectionPool(
 
 def get_db_connection():
     """
-    "database": os.getenv("MYSQL_DB", "Shoppingmall"),
     사용 예)
         conn = current_app.get_db_connection()
         with conn.cursor(dictionary=True) as cur:
@@ -46,18 +44,27 @@ def create_app() -> Flask:
     # DB 헬퍼 주입
     app.get_db_connection = staticmethod(get_db_connection)
 
-    # ── Blueprint 등록 (예시) ─────────────────────────────────
+    # ── Blueprint 등록 ─────────────────────────────────
     from blueprints.main     import main_bp
     from blueprints.auth     import auth_bp
     from blueprints.cart     import cart_bp
     from blueprints.product  import product_bp
     from blueprints.contact  import contact_bp
     from blueprints.checkout import checkout_bp
+    from blueprints.admin    import admin_bp
 
-    for bp in (main_bp, auth_bp, cart_bp, product_bp, contact_bp, checkout_bp):
+    for bp in (
+        main_bp,
+        auth_bp,
+        cart_bp,
+        product_bp,
+        contact_bp,
+        checkout_bp,
+    ):
         app.register_blueprint(bp)
+    app.register_blueprint(admin_bp)
 
-    # ── 전역 Jinja 컨텍스트 ──────────────────────────────────
+    # ── 전역 Jinja 컨텍스트 ────────────────────────────
     @app.context_processor
     def cart_count_processor():
         """템플릿에서 {{ cart_count }} 사용."""
