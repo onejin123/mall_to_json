@@ -71,30 +71,42 @@
     <div class="sidebar">
       <h3>Category</h3>
       <ul>
+        <!-- All 항목 -->
         <li>
           <a href="{{ url_for('product_bp.products') }}"
-            {% if not selected %}style="font-weight:bold;"{% endif %}>
+             {% if not selected_category %}style="font-weight:bold;"{% endif %}>
             All
           </a>
         </li>
-
+    
+        <!-- 상위 카테고리만 별도로 출력 -->
         {% for cat in categories %}
         <li>
-          <strong>{{ cat.name }}</strong>
-          <ul style="margin-left: 10px;">
-            {% for type in cat.types %}
-            <li>
-              <a href="{{ url_for('product_bp.products', category=cat.name, type=type.name) }}"
-                {% if selected_category  == cat.name and selected_type == type.name %}style="font-weight:bold;"{% endif %}>
-                - {{ type.name }}
-              </a>
-            </li>
-            {% endfor %}
-          </ul>
+          <a href="{{ url_for('product_bp.products', category=cat.name) }}"
+             {% if selected_category == cat.name and not selected_type %}style="font-weight:bold;"{% endif %}>
+            {{ cat.name }}
+          </a>
         </li>
         {% endfor %}
       </ul>
+    
+      <h4 style="margin-top:20px;">Sub Types</h4>
+      <ul>
+        {% for cat in categories %}
+          {% if selected_category == cat.name %}
+            {% for type in cat.types %}
+            <li>
+              <a href="{{ url_for('product_bp.products', category=cat.name, type=type.name) }}"
+                 {% if selected_type == type.name %}style="font-weight:bold;"{% endif %}>
+                 {{ type.name }}
+              </a>
+            </li>
+            {% endfor %}
+          {% endif %}
+        {% endfor %}
+      </ul>
     </div>
+    
 
 
     <!-- 오른쪽: 상품 목록 + 관리자 기능 -->
