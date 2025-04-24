@@ -1,0 +1,30 @@
+<!-- templates/sidebar.html -->
+<div class="col-md-3 col-lg-2 bg-light sidebar py-4 px-3">
+  <ul class="nav flex-column">
+    <li class="nav-item">
+      <a class="nav-link {% if active == 'dashboard' %}active{% endif %}" href="{{ url_for('admin_bp.dashboard') }}">
+        <i class="bi bi-speedometer2"></i> 대시보드
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link {% if active == 'products' %}active{% endif %}" href="{{ url_for('admin_bp.manage_products') }}">
+        <i class="bi bi-box-seam"></i> 상품 관리
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link {% if active == 'users' %}active{% endif %}" href="{{ url_for('admin_bp.manage_users') }}">
+        <i class="bi bi-people"></i> 회원 관리
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link {% if active == 'inquiries' %}active{% endif %}" href="{{ url_for('admin_bp.manage_inquiries') }}">
+        <i class="bi bi-chat-dots"></i> 문의 관리
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link {% if active == 'orders' %}active{% endif %}" href="{{ url_for('admin_bp.manage_orders') }}">
+        <i class="bi bi-receipt"></i> 주문 관리
+      </a>
+    </li>
+  </ul>
+</div>

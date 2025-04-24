@@ -1,80 +1,40 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="container-fluid">
-  <div class="row">
-    <!-- Sidebar -->
-    <nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse">
-      <div class="position-sticky pt-3">
-        <ul class="nav flex-column">
-          <li class="nav-item">
-            <a class="nav-link active" aria-current="page" href="{{ url_for('admin_bp.dashboard') }}">
-              <i class="bi bi-speedometer2"></i> 대시보드
-            </a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="{{ url_for('admin_bp.manage_products') }}">
-              <i class="bi bi-box-seam"></i> 상품 관리
-            </a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="{{ url_for('admin_bp.manage_users') }}">
-              <i class="bi bi-people"></i> 회원 관리
-            </a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="{{ url_for('admin_bp.manage_inquiries') }}">
-              <i class="bi bi-chat-dots"></i> 문의 관리
-            </a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="{{ url_for('admin_bp.manage_orders') }}">
-              <i class="bi bi-receipt"></i> 주문 관리
-            </a>
-          </li>
-        </ul>
-      </div>
-    </nav>
-
-    <!-- Main content -->
-    <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
-      <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-        <h1 class="h2">관리자 대시보드</h1>
-      </div>
-      <div class="row g-4">
-        <div class="col-sm-6 col-lg-3">
-          <div class="card text-white bg-primary h-100">
-            <div class="card-body">
-              <h5 class="card-title">총 상품 수</h5>
-              <p class="card-text fs-2">{{ prod_count }}</p>
-            </div>
-          </div>
-        </div>
-        <div class="col-sm-6 col-lg-3">
-          <div class="card text-white bg-success h-100">
-            <div class="card-body">
-              <h5 class="card-title">총 회원 수</h5>
-              <p class="card-text fs-2">{{ user_count }}</p>
-            </div>
-          </div>
-        </div>
-        <div class="col-sm-6 col-lg-3">
-          <div class="card text-white bg-warning h-100">
-            <div class="card-body">
-              <h5 class="card-title">문의 수</h5>
-              <p class="card-text fs-2">{{ inquiry_count }}</p>
-            </div>
-          </div>
-        </div>
-        <div class="col-sm-6 col-lg-3">
-          <div class="card text-white bg-info h-100">
-            <div class="card-body">
-              <h5 class="card-title">총 주문 수</h5>
-              <p class="card-text fs-2">{{ order_count }}</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </main>
+  <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">관리자 대시보드</h1>
   </div>
-</div>
+  <div class="row g-4">
+    <div class="col-sm-6 col-lg-3">
+      <div class="card text-white bg-primary h-100">
+        <div class="card-body">
+          <h5 class="card-title">총 상품 수</h5>
+          <p class="card-text fs-2">{{ prod_count }}</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+      <div class="card text-white bg-success h-100">
+        <div class="card-body">
+          <h5 class="card-title">총 회원 수</h5>
+          <p class="card-text fs-2">{{ user_count }}</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+      <div class="card text-white bg-warning h-100">
+        <div class="card-body">
+          <h5 class="card-title">문의 수</h5>
+          <p class="card-text fs-2">{{ inquiry_count }}</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+      <div class="card text-white bg-info h-100">
+        <div class="card-body">
+          <h5 class="card-title">총 주문 수</h5>
+          <p class="card-text fs-2">{{ order_count }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
 {% endblock %}

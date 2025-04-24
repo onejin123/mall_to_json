@@ -1,9 +1,23 @@
 {% extends 'base.html' %}
+
+{% block title %}회원 관리 | 관리자{% endblock %}
+
 {% block content %}
-<div class="container-fluid">
-  <h2 class="mt-4">회원 관리</h2>
+<div class="container-fluid px-4">
+  <h2 class="mt-4 mb-4">회원 관리</h2>
+
+  {% with messages = get_flashed_messages() %}
+    {% if messages %}
+      <div class="alert alert-info">
+        {% for message in messages %}
+          {{ message }}<br>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
   <div class="table-responsive">
-    <table class="table table-striped table-hover">
+    <table class="table table-bordered table-hover align-middle text-center">
       <thead class="table-dark">
         <tr>
           <th>ID</th>
@@ -22,15 +36,16 @@
           <td>{{ u.email }}</td>
           <td>{{ u.nickname }}</td>
           <td>{{ u.phone or '-' }}</td>
-          <td>{{ u.role_name }}</td>
+          <td>
+            <span class="badge {% if u.role_name == 'ADMIN' %}bg-success{% else %}bg-secondary{% endif %}">
+              {{ u.role_name }}
+            </span>
+          </td>
           <td>{{ u.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
           <td>
-            <form method="post"
-                  action="{{ url_for('auth_bp.toggle_user_admin', user_id=u.id) }}"
-                  style="display:inline;">
-              <button class="btn btn-sm {% if u.role_name=='ADMIN' %}btn-warning{% else %}btn-secondary{% endif %}"
-                      type="submit">
-                {% if u.role_name=='ADMIN' %}권한 해제{% else %}관리자 지정{% endif %}
+            <form method="post" action="{{ url_for('admin_bp.toggle_user_admin', user_id=u.id) }}">
+              <button class="btn btn-sm {% if u.role_name == 'ADMIN' %}btn-outline-warning{% else %}btn-outline-primary{% endif %}" type="submit">
+                {% if u.role_name == 'ADMIN' %}권한 해제{% else %}관리자 지정{% endif %}
               </button>
             </form>
           </td>
