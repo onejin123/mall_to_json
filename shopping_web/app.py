@@ -1,4 +1,6 @@
 import os
+from dotenv import load_dotenv
+load_dotenv()
 from flask import Flask
 import mysql.connector
 from mysql.connector import pooling
@@ -7,9 +9,9 @@ from mysql.connector import pooling
 # DB 헬퍼 – MySQL
 # ──────────────────────────────────────────────
 DB_CONFIG = {
-    "host":     os.getenv("MYSQL_HOST", "192.168.219.168"),
+    "host":     os.getenv("MYSQL_HOST", "192.168.219.84"),
     "port":     int(os.getenv("MYSQL_PORT", 3306)),
-    "user":     os.getenv("MYSQL_USER", "user1"),
+    "user":     os.getenv("MYSQL_USER", "user2"),
     "password": os.getenv("MYSQL_PASSWORD", "1234"),
     "database": os.getenv("MYSQL_DB", "mall"),
     "charset":  "utf8mb4",
