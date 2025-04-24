@@ -6,14 +6,20 @@ from mysql.connector import pooling
 # ──────────────────────────────────────────────
 # DB 헬퍼 – MySQL
 # ──────────────────────────────────────────────
+from dotenv import load_dotenv
+import os
+
+load_dotenv()  # .env 파일 로드
+
 DB_CONFIG = {
-    "host":     os.getenv("MYSQL_HOST", "192.168.219.168"),
-    "port":     int(os.getenv("MYSQL_PORT", 3306)),
-    "user":     os.getenv("MYSQL_USER", "user1"),
-    "password": os.getenv("MYSQL_PASSWORD", "1234"),
-    "database": os.getenv("MYSQL_DB", "mall"),
+    "host":     os.getenv("MYSQL_HOST"),
+    "port":     int(os.getenv("MYSQL_PORT")),
+    "user":     os.getenv("MYSQL_USER"),
+    "password": os.getenv("MYSQL_PASSWORD"),
+    "database": os.getenv("MYSQL_DB"),
     "charset":  "utf8mb4",
 }
+
 
 # 커넥션 풀 생성 (worker 수 ≥ pool_size 권장)
 pool = pooling.MySQLConnectionPool(
