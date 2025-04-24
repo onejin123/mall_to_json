@@ -73,20 +73,29 @@
       <ul>
         <li>
           <a href="{{ url_for('product_bp.products') }}"
-             {% if not selected %}style="font-weight:bold;"{% endif %}>
+            {% if not selected %}style="font-weight:bold;"{% endif %}>
             All
           </a>
         </li>
+
         {% for cat in categories %}
         <li>
-          <a href="{{ url_for('product_bp.products', category=cat['category']) }}"
-             {% if selected == cat['category'] %}style="font-weight:bold;"{% endif %}>
-            {{ cat['category'] }}
-          </a>
+          <strong>{{ cat.name }}</strong>
+          <ul style="margin-left: 10px;">
+            {% for type in cat.types %}
+            <li>
+              <a href="{{ url_for('product_bp.products', category=cat.name, type=type.name) }}"
+                {% if selected_category  == cat.name and selected_type == type.name %}style="font-weight:bold;"{% endif %}>
+                - {{ type.name }}
+              </a>
+            </li>
+            {% endfor %}
+          </ul>
         </li>
         {% endfor %}
       </ul>
     </div>
+
 
     <!-- 오른쪽: 상품 목록 + 관리자 기능 -->
     <div class="main-content">

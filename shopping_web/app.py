@@ -7,11 +7,11 @@ from mysql.connector import pooling
 # DB 헬퍼 – MySQL
 # ──────────────────────────────────────────────
 DB_CONFIG = {
-    "host":     os.getenv("MYSQL_HOST", "192.168.219.168"),
+    "host":     os.getenv("MYSQL_HOST", ""),
     "port":     int(os.getenv("MYSQL_PORT", 3306)),
-    "user":     os.getenv("MYSQL_USER", "user1"),
-    "password": os.getenv("MYSQL_PASSWORD", "1234"),
-    "database": os.getenv("MYSQL_DB", "mall"),
+    "user":     os.getenv("MYSQL_USER", ""),
+    "password": os.getenv("MYSQL_PASSWORD", ""),
+    "database": os.getenv("MYSQL_DB", ""),
     "charset":  "utf8mb4",
 }
 
@@ -80,4 +80,4 @@ def create_app() -> Flask:
 # ──────────────────────────────────────────────
 if __name__ == "__main__":
     app = create_app()
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=5555, debug=True)
