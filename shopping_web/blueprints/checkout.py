@@ -1,8 +1,7 @@
-"""
-shopping_web/blueprints/checkout.py
-결제 및 주문 처리 라우트 모음
-"""
+# shopping_web/blueprints/checkout.py
+
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash, current_app
+from datetime import datetime
 
 checkout_bp = Blueprint("checkout_bp", __name__)
 
@@ -36,7 +35,7 @@ def checkout():
                     products.append({
                         "id":       product["id"],
                         "name":     product["name"],
-                        "price":    product["price"],
+                        "price":    product["price"],  # ✅ 올바른 단가
                         "quantity": qty,
                         "subtotal": subtotal
                     })
@@ -46,20 +45,21 @@ def checkout():
             payment_method = request.form["payment_method"]
             user_id = session["user_id"]
 
-            # 주문 저장
             with conn.cursor() as cur:
+                # 주문 저장
                 cur.execute(
                     "INSERT INTO orders (user_id, address, payment_method, total_amount) VALUES (%s, %s, %s, %s)",
                     (user_id, address, payment_method, total_price)
                 )
                 order_id = cur.lastrowid
 
-                # 상세 항목 저장
+                # 주문 상세 저장 - ✅ 단가만 저장
                 for p in products:
                     cur.execute(
                         "INSERT INTO order_items (order_id, product_id, quantity, unit_price) VALUES (%s, %s, %s, %s)",
-                        (order_id, p["id"], p["quantity"], p["subtotal"])
+                        (order_id, p["id"], p["quantity"], p["price"])
                     )
+
             conn.commit()
             session.pop("cart", None)
             return redirect(url_for("checkout_bp.complete", order_id=order_id))
@@ -77,14 +77,11 @@ def checkout_complete(order_id):
     conn = current_app.get_db_connection()
     try:
         with conn.cursor(dictionary=True) as cursor:
-            # 주문 정보 가져오기
-            cursor.execute(
-                "SELECT * FROM orders WHERE id = %s",
-                (order_id,)
-            )
+            # 주문 정보
+            cursor.execute("SELECT * FROM orders WHERE id = %s", (order_id,))
             order = cursor.fetchone()
 
-            # 주문 상품 목록 가져오기
+            # 주문 상세 항목
             cursor.execute("""
                 SELECT oi.*, p.name
                 FROM order_items oi
@@ -93,10 +90,9 @@ def checkout_complete(order_id):
             """, (order_id,))
             items = cursor.fetchall()
 
-            # 🔥 총 금액 계산해서 order에 추가
+            # ✅ 총합 다시 계산 (단가 * 수량)
             if order:
                 order['total_price'] = sum(item['quantity'] * item['unit_price'] for item in items)
-
     finally:
         conn.close()
 
@@ -105,4 +101,3 @@ def checkout_complete(order_id):
         return redirect(url_for("cart_bp.cart"))
 
     return render_template("checkout_complete.html", order=order, items=items)
-
