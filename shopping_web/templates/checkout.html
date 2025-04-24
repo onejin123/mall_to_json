@@ -2,6 +2,7 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
+  <script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
   <title>Checkout</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
   <style>
@@ -71,8 +72,27 @@
     <h3>총 결제 금액: {{ total_price }}원</h3>
 
     <form method="post">
+      <!-- 배송지 주소 부분 수정 -->
       <label for="address">배송지 주소</label>
-      <input type="text" name="address" id="address" required>
+      <input type="text" id="address" name="address" placeholder="주소 찾기 버튼을 눌러주세요" readonly required>
+      <input type="text" id="detail_address" name="detail_address" placeholder="상세 주소 입력" required>
+      <button type="button" onclick="execDaumPostcode()" style="margin-bottom: 15px;">주소 찾기</button>
+
+      <script>
+        function execDaumPostcode() {
+          new daum.Postcode({
+            oncomplete: function(data) {
+              let fullAddr = data.address;
+              if (data.addressType === 'R') {
+                if (data.bname !== '') fullAddr += ' ' + data.bname;
+                if (data.buildingName !== '') fullAddr += (fullAddr !== '' ? ', ' + data.buildingName : data.buildingName);
+              }
+              document.getElementById('address').value = fullAddr;
+              document.getElementById('detail_address').focus();
+            }
+          }).open();
+        }
+      </script>
 
       <label for="payment_method">결제 방법</label>
       <select name="payment_method" id="payment_method" required>
