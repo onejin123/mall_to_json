@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Log in</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='./css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <style>
       .form-box {
           width: 400px;
@@ -41,6 +41,12 @@
           text-decoration: none;
           color: #333;
       }
+
+      .link-group {
+          display: flex;
+          justify-content: space-between;
+          margin-top: 15px;
+      }
     </style>
 </head>
 <body>
@@ -64,10 +70,11 @@
         <input type="password" name="password" placeholder="password" required>
         <button type="submit">log in</button>
     </form>
+
     <div class="link-group">
-    <a href="#">find id</a>
-    <a href="#">find password</a>
-    <a href="{{ url_for('auth_bp.register') }}">Sign up</a>
+      <a href="{{ url_for('auth_bp.find_id') }}">find id</a>
+      <a href="{{ url_for('auth_bp.reset_password_request') }}">find password</a>
+      <a href="{{ url_for('auth_bp.register') }}">Sign up</a>
     </div>
   </div>
 
