@@ -24,6 +24,11 @@
     th {
       background-color: #f5f5f5;
     }
+
+    tfoot td {
+      font-weight: bold;
+      background-color: #f9f9f9;
+    }
   </style>
 </head>
 <body>
@@ -33,18 +38,17 @@
     <h2>Thank you!</h2>
     <p><strong>order id:</strong> {{ order['id'] }}</p>
     <p><strong>order date:</strong> {{ order['created_at'] }}</p>
-    <p><strong>shipping address:</strong> {{ order['address'] }}</p>
-    <p><strong>payment:</strong> {{ order['payment_method'] }}</p>
-    <p><strong>total price:</strong> {{ order['total_price'] }}원</p>
+    <p><strong>shipping address:</strong> {{ order.get('address', '-') }}</p>
+    <p><strong>payment:</strong> {{ order.get('payment_method', '-') }}</p>
 
-    <h3>order</h3>
+    <h3>Order Details</h3>
     <table>
       <thead>
         <tr>
-          <th></th>
-          <th>quantity</th>
-          <th>price</th>
-          <th>total price</th>
+          <th>상품명</th>
+          <th>수량</th>
+          <th>단가</th>
+          <th>Subtotal</th> <!-- 수정됨 -->
         </tr>
       </thead>
       <tbody>
@@ -52,11 +56,17 @@
         <tr>
           <td>{{ item['name'] }}</td>
           <td>{{ item['quantity'] }}</td>
-          <td>{{ item['unit_price'] }}&#8361</td>
-          <td>{{ item['quantity'] * item['unit_price'] }}&#8361</td>
+          <td>{{ item['unit_price'] }}&#8361;</td>
+          <td>{{ item['quantity'] * item['unit_price'] }}&#8361;</td>
         </tr>
         {% endfor %}
       </tbody>
+      <tfoot>
+        <tr>
+          <td colspan="3" style="text-align:right;">총 결제 금액:</td>
+          <td>{{ order['total_price'] }}&#8361;</td>
+        </tr>
+      </tfoot>
     </table>
   </div>
 </body>

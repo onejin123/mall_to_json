@@ -77,12 +77,14 @@ def checkout_complete(order_id):
     conn = current_app.get_db_connection()
     try:
         with conn.cursor(dictionary=True) as cursor:
+            # 주문 정보 가져오기
             cursor.execute(
                 "SELECT * FROM orders WHERE id = %s",
                 (order_id,)
             )
             order = cursor.fetchone()
 
+            # 주문 상품 목록 가져오기
             cursor.execute("""
                 SELECT oi.*, p.name
                 FROM order_items oi
@@ -90,6 +92,11 @@ def checkout_complete(order_id):
                 WHERE oi.order_id = %s
             """, (order_id,))
             items = cursor.fetchall()
+
+            # 🔥 총 금액 계산해서 order에 추가
+            if order:
+                order['total_price'] = sum(item['quantity'] * item['unit_price'] for item in items)
+
     finally:
         conn.close()
 
@@ -98,3 +105,4 @@ def checkout_complete(order_id):
         return redirect(url_for("cart_bp.cart"))
 
     return render_template("checkout_complete.html", order=order, items=items)
+
