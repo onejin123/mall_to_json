@@ -1,4 +1,6 @@
 import os
+from dotenv import load_dotenv
+load_dotenv()
 from flask import Flask
 import mysql.connector
 from mysql.connector import pooling
