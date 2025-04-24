@@ -59,12 +59,28 @@ def product_detail(product_id: int):
 # ─────────────────────────────────────────────────────────────────────────────
 @product_bp.route("/products", endpoint="products")
 def products():
-    category = request.args.get("category")
+    selected_category = request.args.get("category")
+    selected_type = request.args.get("type")
     search_query = request.args.get("q")
+
     conn = current_app.get_db_connection()
     try:
         with conn.cursor(dictionary=True) as cursor:
-            # Base query joining products and category_types
+            # ─── 카테고리 + 타입 ───
+            cursor.execute("SELECT id, name FROM categories ORDER BY name")
+            categories = cursor.fetchall()
+            cursor.execute("SELECT id, category_id, name FROM category_types ORDER BY name")
+            types = cursor.fetchall()
+
+            # 하위 타입을 상위 카테고리에 묶기
+            from collections import defaultdict
+            grouped = defaultdict(list)
+            for t in types:
+                grouped[t["category_id"]].append(t)
+            for cat in categories:
+                cat["types"] = grouped.get(cat["id"], [])
+
+            # ─── 상품 목록 쿼리 ───
             query = """
                 SELECT
                     p.id, p.name, p.description, p.price, p.stock_quantity,
@@ -76,14 +92,35 @@ def products():
                 LEFT JOIN product_images pi
                   ON pi.product_id = p.id AND pi.is_primary = 1
             """
+            where_clauses = []
             params = []
+
+            # 🔍 category & type 필터링
+            if selected_category:
+                category_id = next((c["id"] for c in categories if c["name"] == selected_category), None)
+
+                if selected_type:
+                    # 상위 + 하위 동시 필터
+                    type_ids = [t["id"] for t in types if t["category_id"] == category_id and t["name"] == selected_type]
+                    if type_ids:
+                        where_clauses.append("p.category_type_id IN (" + ",".join(["%s"] * len(type_ids)) + ")")
+                        params.extend(type_ids)
+                else:
+                    # 상위만 필터
+                    type_ids = [t["id"] for t in types if t["category_id"] == category_id]
+                    if type_ids:
+                        where_clauses.append("p.category_type_id IN (" + ",".join(["%s"] * len(type_ids)) + ")")
+                        params.extend(type_ids)
+
+            # 🔍 검색어 필터링
             if search_query:
-                query += " WHERE p.name LIKE %s OR ct.name LIKE %s"
+                where_clauses.append("(p.name LIKE %s OR ct.name LIKE %s)")
                 params.extend([f"%{search_query}%", f"%{search_query}%"])
-            elif category:
-                query += " WHERE ct.name = %s"
-                params.append(category)
+
+            if where_clauses:
+                query += " WHERE " + " AND ".join(where_clauses)
             query += " ORDER BY p.created_at DESC"
+
             cursor.execute(query, tuple(params))
             products = cursor.fetchall()
     finally:
@@ -92,8 +129,10 @@ def products():
     return render_template(
         "product.html",
         products=products,
-        selected=category,
-        search_query=search_query
+        selected_category=selected_category,
+        selected_type=selected_type,
+        search_query=search_query,
+        categories=categories
     )
 
 @product_bp.route("/products/new", methods=["GET", "POST"], endpoint="create_product")
