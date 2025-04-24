@@ -42,7 +42,7 @@ def checkout():
                     })
 
         if request.method == "POST":
-            address = request.form["address"]
+            address = request.form["address"] + " " + request.form["detail_address"]
             payment_method = request.form["payment_method"]
             user_id = session["user_id"]
 
