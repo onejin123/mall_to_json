@@ -42,10 +42,6 @@
       <div class="clearfix"></div>
     </div>
     
-    <div class="footer">
-        <img src="{{ url_for('static', filename='images/icon1.png') }}">
-        <img src="{{ url_for('static', filename='images/icon2.png') }}">
-        <img src="{{ url_for('static', filename='images/icon3.png') }}">
-    </div>
+    {% include 'footer.html' %}
   </body>
 </html>
