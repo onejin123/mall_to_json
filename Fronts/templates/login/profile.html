@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>마이페이지</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='./css/style.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
   <style>
     .container {
       display: flex;
@@ -49,27 +49,32 @@
       background-color: #f9f9f9;
     }
 
-    .info-box h2,
-    .orders-box h2 {
-      margin-bottom: 20px;
-    }
-
-    .info-box p,
-    .orders-box p {
-      font-size: 16px;
-      margin-bottom: 10px;
-    }
-
     .label {
       font-weight: bold;
       display: inline-block;
       width: 100px;
     }
 
-    .orders-box div.order-group {
-      margin-bottom: 20px;
+    .order-group {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 20px;
       padding-bottom: 15px;
       border-bottom: 1px solid #ddd;
+      margin-bottom: 20px;
+    }
+
+    .order-details {
+      flex: 1;
+    }
+
+    .order-image {
+      width: 100px;
+      height: 100px;
+      object-fit: contain;
+      border: 1px solid #ccc;
+      border-radius: 4px;
     }
 
     .cancel-button {
@@ -91,7 +96,7 @@
   {% include 'navbar.html' %}
 
   <div class="container">
-    <!-- 🔹 사이드바 -->
+    <!-- 사이드바 -->
     <div class="sidebar">
       <ul>
         <li>
@@ -109,7 +114,7 @@
       </ul>
     </div>
 
-    <!-- 🔹 본문 영역 -->
+    <!-- 본문 -->
     <div class="content">
       {% if tab == 'info' %}
       <div class="info-box">
@@ -117,29 +122,15 @@
         <form method="post" action="{{ url_for('auth_bp.profile') }}">
           <div class="mb-3">
             <label class="form-label label" for="nickname">이름</label>
-            <input type="text"
-                   id="nickname"
-                   name="nickname"
-                   class="form-control"
-                   value="{{ user['nickname'] }}"
-                   required>
+            <input type="text" id="nickname" name="nickname" value="{{ user['nickname'] }}" required>
           </div>
           <div class="mb-3">
             <label class="form-label label" for="email">이메일</label>
-            <input type="email"
-                   id="email"
-                   name="email"
-                   class="form-control"
-                   value="{{ user['email'] }}"
-                   disabled>
+            <input type="email" id="email" name="email" value="{{ user['email'] }}" disabled>
           </div>
           <div class="mb-3">
             <label class="form-label label" for="phone">전화번호</label>
-            <input type="text"
-                   id="phone"
-                   name="phone"
-                   class="form-control"
-                   value="{{ user['phone'] or '' }}">
+            <input type="text" id="phone" name="phone" value="{{ user['phone'] or '' }}">
           </div>
           <button type="submit" class="btn btn-primary">저장</button>
         </form>
@@ -151,18 +142,15 @@
         <form method="post" action="{{ url_for('auth_bp.profile') }}">
           <div class="mb-3">
             <label for="current_password" class="form-label">현재 비밀번호</label>
-            <input type="password" id="current_password" name="current_password"
-                   class="form-control" placeholder="현재 비밀번호" required>
+            <input type="password" id="current_password" name="current_password" required>
           </div>
           <div class="mb-3">
             <label for="new_password" class="form-label">새 비밀번호</label>
-            <input type="password" id="new_password" name="new_password"
-                   class="form-control" placeholder="새 비밀번호" required>
+            <input type="password" id="new_password" name="new_password" required>
           </div>
           <div class="mb-3">
             <label for="confirm_password" class="form-label">비밀번호 확인</label>
-            <input type="password" id="confirm_password" name="confirm_password"
-                   class="form-control" placeholder="비밀번호 확인" required>
+            <input type="password" id="confirm_password" name="confirm_password" required>
           </div>
           <button type="submit" class="btn btn-warning">비밀번호 변경</button>
         </form>
@@ -180,23 +168,24 @@
             {% endif %}
 
             <div class="order-group">
-              <strong>주문번호: {{ order.order_id }}</strong><br>
-              주문일시: {{ order.created_at }}<br>
-              총액: {{ order.total_amount }} 원<br>
-              상태: {{ order.status }}<br>
-              <p>📦 상품: {{ order.product_name }}
-                (수량: {{ order.quantity }}, 단가: {{ order.unit_price }} 원)
-              </p>
+              <div class="order-details">
+                <strong>주문번호: {{ order.order_id }}</strong><br>
+                주문일시: {{ order.created_at }}<br>
+                총액: {{ order.total_amount }} 원<br>
+                상태: {{ order.status }}<br>
+                주소: {{ order.address }}<br>
+                <p>📦 상품: {{ order.product_name }} (수량: {{ order.quantity }}, 단가: {{ order.unit_price }} 원)</p>
+                {% if order.status in ['PENDING', 'PAID'] %}
+                <form method="post" action="{{ url_for('auth_bp.cancel_order', order_id=order.order_id) }}">
+                  <button type="submit" class="cancel-button" onclick="return confirm('정말 주문을 취소하시겠습니까?');">
+                    ❌ 주문 취소
+                  </button>
+                </form>
+                {% endif %}
+              </div>
 
-              {% if order.status in ['PENDING', 'PAID'] %}
-              <form method="post"
-                    action="{{ url_for('auth_bp.cancel_order', order_id=order.order_id) }}">
-                <button type="submit"
-                        class="cancel-button"
-                        onclick="return confirm('정말 주문을 취소하시겠습니까?');">
-                  ❌ 주문 취소
-                </button>
-              </form>
+              {% if order.image_url %}
+              <img src="{{ url_for('static', filename=order.image_url) }}" class="order-image" alt="상품 이미지">
               {% endif %}
             </div>
           {% endfor %}

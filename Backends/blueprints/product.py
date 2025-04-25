@@ -25,10 +25,12 @@ def product_detail(product_id: int):
                 SELECT
                     p.id, p.name, p.description, p.price, p.stock_quantity,
                     p.created_at, p.updated_at,
-                    ct.name AS category,
+                    ct.name AS type_name,
+                    c.name AS category_name,
                     pi.url AS image
                 FROM products p
                 JOIN category_types ct ON p.category_type_id = ct.id
+                JOIN categories c ON ct.category_id = c.id
                 LEFT JOIN product_images pi
                   ON pi.product_id = p.id AND pi.is_primary = 1
                 WHERE p.id = %s
@@ -36,19 +38,19 @@ def product_detail(product_id: int):
                 (product_id,)
             )
             product = cursor.fetchone()
+
+            # 이미지 경로 조립
+            if product and product.get("image"):
+                product["image_url"] = url_for(
+                    "static",
+                    filename=f"uploads/{product['category_name']}/{product['type_name']}/{product['image']}"
+                )
     finally:
         conn.close()
 
-    desc_path = BASE_DIR / "static" / "data" / "product_descriptions.json"
-    descriptions = {}
-    if desc_path.exists():
-        with open(desc_path, encoding="utf-8") as f:
-            descriptions = json.load(f)
-
     return render_template(
         "product/product_detail.html",
-        product=product,
-        desc=descriptions.get(str(product_id), {})
+        product=product
     )
 
 
@@ -230,6 +232,9 @@ def create_product():
 
 
 
+import os
+from flask import current_app
+
 @product_bp.route("/product/delete/<int:product_id>", methods=["POST"], endpoint="delete_product")
 def delete_product(product_id):
     if not session.get("is_admin"):
@@ -237,35 +242,47 @@ def delete_product(product_id):
         return redirect(url_for("product_bp.product_detail", product_id=product_id))
 
     conn = current_app.get_db_connection()
+    image_path = None
+
     try:
+        with conn.cursor(dictionary=True) as cursor:
+            # 🔍 1. 이미지 경로를 먼저 조회
+            cursor.execute("""
+                SELECT pi.url, ct.name AS type_name, c.name AS category_name
+                FROM product_images pi
+                JOIN products p ON pi.product_id = p.id
+                JOIN category_types ct ON p.category_type_id = ct.id
+                JOIN categories c ON ct.category_id = c.id
+                WHERE pi.product_id = %s AND pi.is_primary = 1
+            """, (product_id,))
+            row = cursor.fetchone()
+            if row:
+                filename = row["url"]
+                category = row["category_name"]
+                type_name = row["type_name"]
+                image_path = os.path.join(
+                    current_app.root_path, "..", "Fronts", "static", "uploads",
+                    category, type_name, filename
+                )
+
+        # 🔄 실제 삭제 실행 (커서 재사용)
         with conn.cursor() as cursor:
-            # 1. order_items에서 참조 제거
-            cursor.execute(
-                "DELETE FROM order_items WHERE product_id = %s",
-                (product_id,)
-            )
-
-            # 2. carts에서 참조 제거
-            cursor.execute(
-                "DELETE FROM carts WHERE product_id = %s",
-                (product_id,)
-            )
-
-            # 3. product_images에서 참조 제거
-            cursor.execute(
-                "DELETE FROM product_images WHERE product_id = %s",
-                (product_id,)
-            )
-
-            # 4. products에서 최종 삭제
-            cursor.execute(
-                "DELETE FROM products WHERE id = %s",
-                (product_id,)
-            )
-
+            cursor.execute("DELETE FROM order_items WHERE product_id = %s", (product_id,))
+            cursor.execute("DELETE FROM carts WHERE product_id = %s", (product_id,))
+            cursor.execute("DELETE FROM product_images WHERE product_id = %s", (product_id,))
+            cursor.execute("DELETE FROM products WHERE id = %s", (product_id,))
         conn.commit()
+
     finally:
         conn.close()
 
+    # 🔥 파일 삭제
+    if image_path and os.path.exists(image_path):
+        try:
+            os.remove(image_path)
+        except Exception as e:
+            current_app.logger.warning(f"이미지 삭제 실패: {e}")
+
     flash("상품이 완전히 삭제되었습니다.")
     return redirect(url_for("admin_bp.manage_products"))
+
