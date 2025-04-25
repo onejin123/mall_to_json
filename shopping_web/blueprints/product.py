@@ -242,4 +242,4 @@ def delete_product(product_id):
         conn.close()
 
     flash("상품이 완전히 삭제되었습니다.")
-    return redirect(url_for("product_bp.products"))
+    return redirect(url_for("admin_bp.manage_products"))
