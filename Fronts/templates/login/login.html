@@ -51,6 +51,8 @@
 </head>
 <body>
   {% include 'navbar.html' %}
+  {% import "bootstrap/wtf.html" as wtf %}
+  {% set form = wtf.render_form(form, render=False) or form %}
 
   <div class="form-box">
     <h2>log in</h2>
@@ -66,8 +68,17 @@
     {% endwith %}
 
     <form method="post">
-        <input type="email" name="email" placeholder="email" required>
-        <input type="password" name="password" placeholder="password" required>
+        {{ form.csrf_token }}
+        {{ form.email(placeholder="email", required=True) }}
+        {% for error in form.email.errors %}
+          <div style="color: red; margin-bottom: 10px;">{{ error }}</div>
+        {% endfor %}
+
+        {{ form.password(placeholder="password", required=True) }}
+        {% for error in form.password.errors %}
+          <div style="color: red; margin-bottom: 10px;">{{ error }}</div>
+        {% endfor %}
+
         <button type="submit">log in</button>
     </form>
 

@@ -1,0 +1,10 @@
+{# bootstrap/wtf.html - minimal macros for WTForms rendering #}
+{% macro render_form(form, render=True) -%}
+  {%- if render -%}
+    {%- for field in form -%}
+      {{ field }}
+    {%- endfor -%}
+  {%- else -%}
+    {{ "" }}
+  {%- endif -%}
+{%- endmacro %}

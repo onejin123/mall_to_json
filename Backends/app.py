@@ -43,8 +43,8 @@ def get_db_connection():
 # ──────────────────────────────────────────────
 
 def create_app() -> Flask:
-    # 프로젝트 루트 경로 (templates/ 및 static/ 폴더가 위치)
-    base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '../Fronts'))
+    # Locate the Fronts directory alongside Backends
+    base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'Fronts'))
 
     app = Flask(
         __name__,
