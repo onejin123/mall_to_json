@@ -29,7 +29,7 @@ def contact():
     finally:
         conn.close()
 
-    return render_template("contact.html", board_type=board_type, posts=posts)
+    return render_template("contact/contact.html", board_type=board_type, posts=posts)
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -81,7 +81,7 @@ def write_post():
         
         return redirect(url_for("contact_bp.contact", type=board_type))
 
-    return render_template("write_post.html", board_type=board_type)
+    return render_template("contact/write_post.html", board_type=board_type)
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -118,7 +118,7 @@ def edit_post(inquiry_id):
     finally:
         conn.close()
 
-    return render_template("write_post.html", board_type=inquiry["type"], inquiry=inquiry)
+    return render_template("contact/write_post.html", board_type=inquiry["type"], inquiry=inquiry)
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -155,7 +155,7 @@ def delete_post(inquiry_id):
     finally:
         conn.close()
 
-    return redirect(url_for("contact_bp.contact", type=inquiry["type"]))
+    return redirect(url_for("contact/contact_bp.contact", type=inquiry["type"]))
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -180,4 +180,4 @@ def inquiry_detail(inquiry_id):
         flash("문의글을 찾을 수 없습니다.")
         return redirect(url_for("contact_bp.contact", type='QNA'))
 
-    return render_template("inquiry_detail.html", inquiry=inquiry)
+    return render_template("contact/inquiry_detail.html", inquiry=inquiry)

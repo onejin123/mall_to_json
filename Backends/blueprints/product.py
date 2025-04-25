@@ -3,9 +3,8 @@ import json
 from pathlib import Path
 from flask import Blueprint, render_template, request, current_app
 import os
-from werkzeug.utils import secure_filename
 from collections import defaultdict
-from pymysql.cursors import DictCursor
+import uuid
 
 product_bp = Blueprint("product_bp", __name__)
 # 업로드 디렉터리 설정 (app.py에서 UPLOAD_FOLDER 설정 권장)
@@ -184,7 +183,8 @@ def create_product():
             flash("이미지를 업로드해주세요.")
             return redirect(url_for("product_bp.create_product"))
 
-        filename = secure_filename(file.filename)
+        ext = os.path.splitext(file.filename)[1]  # 예: '.jpg'
+        filename = f"{uuid.uuid4().hex}{ext}"
 
         conn = current_app.get_db_connection()
         try:
@@ -205,7 +205,7 @@ def create_product():
                 file_path = os.path.join(upload_folder, filename)
                 file.save(file_path)
 
-                relative_path = f"{category_name}/{type_name}/{filename}"
+                relative_path = f"{filename}"
 
                 cursor.execute("""
                     INSERT INTO products (name, category_type_id, description, price, stock_quantity, created_at, updated_at)
