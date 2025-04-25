@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Source de Vérité</title>
+    <link rel="icon" href="{{ url_for('static', filename='images/logo.png') }}" type="image/x-icon">
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='./css/style.css') }}">
+  </head>
+
+  <body>
+    {% include 'navbar.html' %}
+
+    
+    <!-- 🔁 슬라이드 이미지 영역 -->
+    <img class="hero_header" id="heroSlider" src="{{ url_for('static', filename='images/shoe1.jpg') }}">
+    <script>
+        const images = [
+          "{{ url_for('static', filename='images/shoe1.jpg') }}",
+          "{{ url_for('static', filename='images/shoe2.jpg') }}",
+          "{{ url_for('static', filename='images/supreme.jpg') }}"
+        ];
+      
+        let currentIndex = 0;
+        const slider = document.getElementById('heroSlider');
+      
+        setInterval(() => {
+          currentIndex = (currentIndex + 1) % images.length;
+          slider.src = images[currentIndex];
+        }, 3000); // 3초마다 변경
+    </script>
+      
+    <h1>Our new Products</h1>
+    <div class="products">
+        {% for product in products %}
+        <a href="{{ url_for('product_bp.product_detail', product_id=product['id']) }}">
+          <img src="{{ url_for('static', filename='uploads/' + product['image']) }}"
+              alt="{{ product['name'] }}">           
+          <p>{{ product['name'] }}</p>
+          <p class="price">{{ product['price'] }}&#x20a9</p>
+        </a>
+        {% endfor %}
+      <div class="clearfix"></div>
+    </div>
+    
+    {% include 'footer.html' %}
+  </body>
+</html>

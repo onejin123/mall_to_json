@@ -1,0 +1,133 @@
+
+* {
+    box-sizing: border-box;
+  }
+  
+  body {
+    margin: 0;
+    min-width: 992px;
+    font-family: 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;  
+    }
+  
+  .navbar{
+    height: 60px;
+    padding-left: 30px;
+  }
+  
+  .logo{
+    line-height: 60px;
+    float: left;
+  }
+  
+  .logo img{
+    vertical-align: middle;
+  }
+  
+  .navbar ul{
+    float: right;
+  }
+  
+  .navbar li{
+    list-style-type: none;
+    float: left;
+    margin-right: 30px;
+  }
+  
+  .navbar a{
+    text-decoration: none;
+    color: black;
+    font-style: bold;
+    font-size: 13px;
+  }
+  
+  .hero_header {
+    height: 400px;
+    width: 50%;              /* 너비 50% 유지 */
+    display: block;          /* margin 적용 위해 필요 */
+    margin-left: auto;       /* 좌우 여백 자동 */
+    margin-right: auto;
+    object-fit: contain;       /* 필요 시 이미지 잘리지 않게 조정 */
+  }
+  
+  body h1{
+    text-align: center;
+    margin-top: 60px;
+    margin-bottom: 60px;
+    font-size: 24px;
+    font-style: bold;
+    color: #545454;
+  }
+  
+  .products {
+    margin-left: auto;
+    margin-right: auto;
+    padding: 0;
+    width: 740px;
+    text-align: center;
+  }
+  
+  .products img{
+    width: 225px;
+    height: 225px;
+    margin-right: 20px;
+    margin-bottom: 20px;
+  }
+  
+  .products a{
+    text-decoration: none;
+    color: black;
+    float: left;
+    font-size: 16px;
+  }
+  
+  .price{
+    margin-top: 4px;
+    margin-bottom: 80px;
+  }
+  
+  .clearfix{
+    clear: both;
+  }
+  
+  .footer{
+    text-align: center;
+  }
+  
+  .footer img{
+    margin-top: 40px;
+    height: 20px;
+    margin-bottom: 80px;
+    margin-left: 10px;
+    margin-right: 10px;
+  }
+
+  .link-group {
+    display: flex;
+    justify-content: center;
+    gap: 20px; /* 링크 사이 간격 */
+    margin-top: 15px;
+}
+
+.link-group a {
+    text-decoration: none;
+    color: #333;
+    font-size: 14px;
+}
+
+a {
+  text-decoration: none;   /* 밑줄 제거 */
+  color: black;            /* 기본 색상 고정 */
+}
+
+a:visited {
+  color: black;            /* 방문한 링크도 동일하게 */
+}
+
+a:hover {
+  color: #555;             /* 선택사항: 마우스 올렸을 때 색 */
+}
+
+a:active {
+  color: black;            /* 클릭 시 색 고정 */
+}
+
