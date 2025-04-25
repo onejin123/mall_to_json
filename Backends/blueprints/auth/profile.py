@@ -76,7 +76,7 @@ def mypage():
             cur.execute("""
                 SELECT
                     o.id AS order_id, o.created_at, o.total_amount, o.status,
-                    p.name AS product_name, oi.quantity, oi.unit_price,
+                    o.address, p.name AS product_name, oi.quantity, oi.unit_price,
                     pi.url AS image,
                     cat.name AS category, ct.name AS category_type
                 FROM orders o
@@ -100,6 +100,7 @@ def mypage():
 
     conn.close()
     return render_template("login/profile.html", tab=tab, user=user, orders=orders)
+
 
 
 
@@ -144,3 +145,34 @@ def cancel_order(order_id):
         conn.close()
 
     return redirect(url_for("auth_bp.profile", tab="orders"))
+
+@auth_bp.route("/update_address/<int:order_id>", methods=["GET", "POST"])
+def update_address(order_id):
+    conn = current_app.get_db_connection()
+    try:
+        with conn.cursor(dictionary=True) as cur:
+            cur.execute("SELECT * FROM orders WHERE id = %s", (order_id,))
+            order = cur.fetchone()
+
+        # 주문이 존재하지 않거나 상태가 PENDING 또는 PAID가 아닌 경우, 접근을 막음
+        if not order or order['status'] not in ['PENDING', 'PAID']:
+            flash("배송지를 수정할 수 없습니다.", 'danger')
+            return redirect(url_for('auth_bp.profile', tab='orders'))
+
+        if request.method == 'POST':
+            new_address = request.form.get('address')
+
+            # 배송지 업데이트
+            with conn.cursor() as cur:
+                cur.execute(
+                    "UPDATE orders SET address = %s, updated_at = NOW() WHERE id = %s",
+                    (new_address, order_id)
+                )
+            conn.commit()
+            flash("배송지가 수정되었습니다.", 'success')
+            return redirect(url_for('auth_bp.profile', tab='orders'))
+
+        return render_template("update_address.html", order=order)
+
+    finally:
+        conn.close()

@@ -173,9 +173,8 @@
                 주문일시: {{ order.created_at }}<br>
                 총액: {{ order.total_amount }} 원<br>
                 상태: {{ order.status }}<br>
-                <p>📦 상품: {{ order.product_name }}
-                  (수량: {{ order.quantity }}, 단가: {{ order.unit_price }} 원)
-                </p>
+                주소: {{ order.address }}<br>
+                <p>📦 상품: {{ order.product_name }} (수량: {{ order.quantity }}, 단가: {{ order.unit_price }} 원)</p>
                 {% if order.status in ['PENDING', 'PAID'] %}
                 <form method="post" action="{{ url_for('auth_bp.cancel_order', order_id=order.order_id) }}">
                   <button type="submit" class="cancel-button" onclick="return confirm('정말 주문을 취소하시겠습니까?');">

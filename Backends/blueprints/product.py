@@ -48,17 +48,9 @@ def product_detail(product_id: int):
     finally:
         conn.close()
 
-    # JSON 설명 불러오기
-    desc_path = Path(current_app.root_path).parent / "Fronts" / "static" / "data" / "product_descriptions.json"
-    descriptions = {}
-    if desc_path.exists():
-        with open(desc_path, encoding="utf-8") as f:
-            descriptions = json.load(f)
-
     return render_template(
         "product/product_detail.html",
-        product=product,
-        desc=descriptions.get(str(product_id), {})
+        product=product
     )
 
 
