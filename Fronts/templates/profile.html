@@ -94,8 +94,18 @@
     <!-- 🔹 사이드바 -->
     <div class="sidebar">
       <ul>
-        <li><a href="{{ url_for('auth_bp.profile', tab='info') }}" class="{{ 'active' if tab == 'info' else '' }}">내 정보</a></li>
-        <li><a href="{{ url_for('auth_bp.profile', tab='orders') }}" class="{{ 'active' if tab == 'orders' else '' }}">주문 내역</a></li>
+        <li>
+          <a href="{{ url_for('auth_bp.profile', tab='info') }}"
+             class="{{ 'active' if tab == 'info' else '' }}">
+            내 정보
+          </a>
+        </li>
+        <li>
+          <a href="{{ url_for('auth_bp.profile', tab='orders') }}"
+             class="{{ 'active' if tab == 'orders' else '' }}">
+            주문 내역
+          </a>
+        </li>
       </ul>
     </div>
 
@@ -103,11 +113,38 @@
     <div class="content">
       {% if tab == 'info' %}
       <div class="info-box">
-        <h2>내 정보</h2>
-        <p><span class="label">이름</span>: {{ user['nickname'] }}</p>
-        <p><span class="label">이메일</span>: {{ user['email'] }}</p>
-        <p><span class="label">전화번호</span>: {{ user['phone'] or '미입력' }}</p>
+        <h2>내 정보 수정</h2>
+        <form method="post" action="{{ url_for('auth_bp.profile') }}">
+          <div class="mb-3">
+            <label class="form-label label" for="nickname">이름</label>
+            <input type="text"
+                   id="nickname"
+                   name="nickname"
+                   class="form-control"
+                   value="{{ user['nickname'] }}"
+                   required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label label" for="email">이메일</label>
+            <input type="email"
+                   id="email"
+                   name="email"
+                   class="form-control"
+                   value="{{ user['email'] }}"
+                   disabled>
+          </div>
+          <div class="mb-3">
+            <label class="form-label label" for="phone">전화번호</label>
+            <input type="text"
+                   id="phone"
+                   name="phone"
+                   class="form-control"
+                   value="{{ user['phone'] or '' }}">
+          </div>
+          <button type="submit" class="btn btn-primary">저장</button>
+        </form>
       </div>
+
       {% elif tab == 'orders' %}
       <div class="orders-box">
         <h2>주문 내역</h2>
@@ -124,11 +161,18 @@
               주문일시: {{ order.created_at }}<br>
               총액: {{ order.total_amount }} 원<br>
               상태: {{ order.status }}<br>
-              <p>📦 상품: {{ order.product_name }} (수량: {{ order.quantity }}, 단가: {{ order.unit_price }} 원)</p>
+              <p>📦 상품: {{ order.product_name }}
+                (수량: {{ order.quantity }}, 단가: {{ order.unit_price }} 원)
+              </p>
 
               {% if order.status in ['PENDING', 'PAID'] %}
-              <form method="post" action="{{ url_for('auth_bp.cancel_order', order_id=order.order_id) }}">
-                <button type="submit" class="cancel-button" onclick="return confirm('정말 주문을 취소하시겠습니까?');">❌ 주문 취소</button>
+              <form method="post"
+                    action="{{ url_for('auth_bp.cancel_order', order_id=order.order_id) }}">
+                <button type="submit"
+                        class="cancel-button"
+                        onclick="return confirm('정말 주문을 취소하시겠습니까?');">
+                  ❌ 주문 취소
+                </button>
               </form>
               {% endif %}
             </div>

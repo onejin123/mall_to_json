@@ -2,11 +2,28 @@ from flask import render_template, redirect, url_for, flash, session, request, c
 from datetime import datetime
 from . import auth_bp
 
-@auth_bp.route("/profile", endpoint="profile")
+@auth_bp.route("/profile", methods=["GET", "POST"], endpoint="profile")
 def mypage():
     if "user_id" not in session:
         flash("로그인이 필요합니다.")
         return redirect(url_for("auth_bp.login"))
+
+    if request.method == "POST":
+        # 사용자 정보 업데이트
+        nickname = request.form.get("nickname")
+        phone    = request.form.get("phone")
+        conn = current_app.get_db_connection()
+        try:
+            with conn.cursor() as cur:
+                cur.execute(
+                    "UPDATE users SET nickname = %s, phone = %s, updated_at = NOW() WHERE id = %s",
+                    (nickname, phone, session["user_id"])
+                )
+            conn.commit()
+            flash("개인정보가 업데이트되었습니다.")
+        finally:
+            conn.close()
+        return redirect(url_for("auth_bp.profile", tab="info"))
 
     tab = request.args.get("tab", "info")
     conn = current_app.get_db_connection()
