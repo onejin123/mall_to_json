@@ -6,6 +6,7 @@ import mysql.connector
 from mysql.connector import errors
 from werkzeug.utils import secure_filename
 import os
+from markupsafe import escape
 
 contact_bp = Blueprint("contact_bp", __name__)
 
@@ -52,6 +53,35 @@ def write_post():
         # 관리자는 type을 선택할 수 있음
         if session.get("is_admin"):
             board_type = request.form.get("type", board_type)
+
+        # 서버 사이드 검증
+        errors = []
+        title = title.strip()
+        content = content.strip()
+        # 제목 검증: 필수, 최대 200자
+        if not title:
+            errors.append("제목을 입력하세요.")
+        elif len(title) > 200:
+            errors.append("제목은 200자 이하로 입력해야 합니다.")
+        # 내용 검증: 필수, 최대 2000자
+        if not content:
+            errors.append("내용을 입력하세요.")
+        elif len(content) > 2000:
+            errors.append("내용은 2000자 이하로 입력해야 합니다.")
+        # 게시판 타입 검증
+        allowed_types = ["NOTICE", "FAQ", "QNA"]
+        if board_type not in allowed_types:
+            errors.append("유효하지 않은 게시판 타입입니다.")
+
+        if errors:
+            for e in errors:
+                flash(e)
+            return render_template(
+                "contact/write_post.html",
+                board_type=board_type,
+                title=escape(title),
+                content=escape(content)
+            )
 
         conn = current_app.get_db_connection()
         try:
@@ -110,6 +140,30 @@ def edit_post(inquiry_id):
             if request.method == "POST":
                 title   = request.form["title"]
                 content = request.form["content"]
+
+                # 서버 사이드 검증
+                errors = []
+                title = title.strip()
+                content = content.strip()
+                if not title:
+                    errors.append("제목을 입력하세요.")
+                elif len(title) > 200:
+                    errors.append("제목은 200자 이하로 입력해야 합니다.")
+                if not content:
+                    errors.append("내용을 입력하세요.")
+                elif len(content) > 2000:
+                    errors.append("내용은 2000자 이하로 입력해야 합니다.")
+                if errors:
+                    for e in errors:
+                        flash(e)
+                    return render_template(
+                        "contact/write_post.html",
+                        board_type=inquiry["type"],
+                        inquiry=inquiry,
+                        title=escape(title),
+                        content=escape(content)
+                    )
+
                 cursor.execute("UPDATE inquiries SET title = %s, content = %s WHERE id = %s",
                                (title, content, inquiry_id))
                 conn.commit()

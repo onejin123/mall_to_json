@@ -1,30 +1,63 @@
+<style>
+  /* SVG path hover 효과 */
+  .navbar svg path {
+    transition: all 0.3s ease;
+  }
+
+  .navbar a:hover svg path {
+    stroke: black;
+    fill: black;
+  }
+
+  /* 추가 선택: 아이콘 전체 박스 hover 시 배경 살짝 */
+  .navbar a:hover rect {
+    fill: #f0f0f0;
+  }
+</style>
+
 <div class="navbar">
-    <a class="logo" href="{{ url_for('main_bp.index') }}">
-      <img src="{{ url_for('static', filename='images/logo.png') }}" height="40">
-      Source de Vérité
-    </a>
-    <ul>
-      <li><a href="{{ url_for('main_bp.index') }}">Home</a></li>
-      <li><a href="{{ url_for('product_bp.products') }}">Product</a></li>
-      <li><a href="{{ url_for('contact_bp.contact') }}">Contact</a></li>
+  <a class="logo" href="{{ url_for('main_bp.index') }}">
+    <img src="{{ url_for('static', filename='images/logo.png') }}" height="40">
+    Source de Vérité
+  </a>
+  <ul>
+    <li><a href="{{ url_for('main_bp.index') }}">Home</a></li>
+    <li><a href="{{ url_for('product_bp.products') }}">Product</a></li>
+    <li><a href="{{ url_for('contact_bp.contact') }}">Contact</a></li>
   
-      {% if session.get('user_id') %}
-        <li>
-          <a href="{{ url_for('cart_bp.cart') }}">
-            Cart{% if cart_count > 0 %} ({{ cart_count }}){% endif %}
-          </a>
-        </li>
-        <li><a href="{{ url_for('auth_bp.profile') }}">My page</a></li>
-        <li><a href="{{ url_for('auth_bp.logout') }}">Log out</a></li>
+    {% if session.get('user_id') %}
   
-        {% if session.get('is_admin') %}
-          <li><a href="{{ url_for('admin_bp.dashboard') }}">Admin Dashboard</a></li>
-        {% endif %}
+      <li><a href="{{ url_for('auth_bp.logout') }}">Log out</a></li>
   
-        <li><span>Welcome, {{ session['user_name'] }}!</span></li>
-      {% else %}
-        <li><a href="{{ url_for('auth_bp.login') }}">Log in</a></li>
-        <li><a href="{{ url_for('auth_bp.register') }}">Sign up</a></li>
+      {% if session.get('is_admin') %}
+        <li><a href="{{ url_for('admin_bp.dashboard') }}">Admin Dashboard</a></li>
       {% endif %}
-    </ul>
-  </div>
+  
+      <li><span>Welcome, {{ session['user_name'] }}!</span></li>
+  
+    {% else %}
+      <li><a href="{{ url_for('auth_bp.login') }}">Log in</a></li>
+      <li><a href="{{ url_for('auth_bp.register') }}">Sign up</a></li>
+    {% endif %}
+
+          <!-- 🛒 Cart 아이콘 -->
+          <li>
+            <a href="{{ url_for('cart_bp.cart') }}" data-discover="true">
+              <svg width="44" height="44" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect width="44" height="44" rx="8" fill="white"/>
+                <path d="M14.5 15.3333H15.0053C15.8558 15.3333 16.5699 15.9737 16.6621 16.8192L17.3379 23.014C17.4301 23.8595 18.1442 24.4999 18.9947 24.4999H26.205C26.9669 24.4999 27.6317 23.9833 27.82 23.2451L28.9699 18.7358C29.2387 17.682 28.4425 16.6573 27.355 16.6573H17.5M17.5206 27.5207H18.1456M17.5206 28.1457H18.1456M26.6873 27.5207H27.3123M26.6873 28.1457H27.3123M18.6667 27.8333C18.6667 28.2935 18.2936 28.6666 17.8333 28.6666C17.3731 28.6666 17 28.2935 17 27.8333C17 27.373 17.3731 26.9999 17.8333 26.9999C18.2936 26.9999 18.6667 27.373 18.6667 27.8333ZM27.8333 27.8333C27.8333 28.2935 27.4602 28.6666 27 28.6666C26.5398 28.6666 26.1667 28.2935 26.1667 27.8333C26.1667 27.373 26.5398 26.9999 27 26.9999C27.4602 26.9999 27.8333 27.373 27.8333 27.8333Z" stroke="#2A2F2F" stroke-width="1.5" stroke-linecap="round"/>
+              </svg>
+            </a>
+          </li>
+      
+          <!-- 👤 My Page 아이콘 -->
+          <li>
+            <a href="{{ url_for('auth_bp.profile') }}">
+              <svg width="44" height="44" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect width="44" height="44" rx="8" fill="white"/>
+                <path d="M22 23.6666C24.3012 23.6666 26.1667 21.8011 26.1667 19.4999C26.1667 17.1987 24.3012 15.3333 22 15.3333C19.6988 15.3333 17.8333 17.1987 17.8333 19.4999C17.8333 21.8011 19.6988 23.6666 22 23.6666ZM22 23.6666C18.3181 23.6666 15.3333 25.9052 15.3333 28.6666M22 23.6666C25.6819 23.6666 28.6667 25.9052 28.6667 28.6666" stroke="#2A2F2F" stroke-width="1.5" stroke-linecap="round"/>
+              </svg>
+            </a>
+          </li>
+  </ul>  
+</div>
