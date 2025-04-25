@@ -89,7 +89,7 @@ def mypage():
                 orders.append(order)
 
     conn.close()
-    return render_template("profile.html", tab=tab, user=user, orders=orders)
+    return render_template("login/profile.html", tab=tab, user=user, orders=orders)
 
 
 # Existing view functions...

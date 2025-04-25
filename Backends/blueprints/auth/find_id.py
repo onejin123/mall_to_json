@@ -22,4 +22,4 @@ def find_id():
             flash("가입된 이메일이 없습니다.")
         return redirect(url_for("auth_bp.find_id"))
 
-    return render_template("find_id.html")
+    return render_template("login/find_id.html")
