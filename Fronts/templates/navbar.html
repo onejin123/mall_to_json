@@ -1,5 +1,58 @@
 <style>
-  /* SVG path hover 효과 */
+  .navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 40px;
+    background-color: white;
+  }
+
+  .nav-left,
+  .nav-center,
+  .nav-right {
+    display: flex;
+    align-items: center;
+  }
+
+  .nav-left .logo {
+    margin-right: 30px;
+    display: flex;
+    align-items: center;
+    font-weight: bold;
+    font-size: 18px;
+    color: #333;
+    text-decoration: none;
+  }
+
+  .nav-left ul {
+    list-style: none;
+    display: flex;
+    gap: 20px;
+    padding: 0;
+    margin: 0;
+  }
+
+  .nav-left ul li a {
+    text-decoration: none;
+    color: #333;
+    font-weight: 500;
+  }
+
+  .nav-center {
+    flex: 1;
+    justify-content: center;
+  }
+
+  .welcome-text {
+    font-weight: 500;
+    color: #555;
+    font-size: 15px;
+  }
+
+  .nav-right a {
+    margin-left: 20px;
+  }
+
   .navbar svg path {
     transition: all 0.3s ease;
   }
@@ -9,55 +62,99 @@
     fill: black;
   }
 
-  /* 추가 선택: 아이콘 전체 박스 hover 시 배경 살짝 */
   .navbar a:hover rect {
     fill: #f0f0f0;
   }
+
+  .dropdown {
+  position: relative;
+}
+
+.dropdown-toggle {
+  display: inline-block;
+}
+
+.dropdown-menu {
+  display: none;
+  position: absolute;
+  top: 48px;
+  right: 0;
+  background-color: white;
+  border: 1px solid #ccc;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  border-radius: 6px;
+  min-width: 120px;
+  z-index: 999;
+}
+
+.dropdown-menu a {
+  display: block;
+  padding: 10px 15px;
+  color: #333;
+  text-decoration: none;
+  font-size: 14px;
+}
+
+.dropdown-menu a:hover {
+  background-color: #f0f0f0;
+  color: black;
+}
+
+/* 마우스 올렸을 때 메뉴 표시 */
+.dropdown:hover .dropdown-menu {
+  display: block;
+}
+
 </style>
 
 <div class="navbar">
-  <a class="logo" href="{{ url_for('main_bp.index') }}">
-    <img src="{{ url_for('static', filename='images/logo.png') }}" height="40">
-    Source de Vérité
-  </a>
-  <ul>
-    <li><a href="{{ url_for('main_bp.index') }}">Home</a></li>
-    <li><a href="{{ url_for('product_bp.products') }}">Product</a></li>
-    <li><a href="{{ url_for('contact_bp.contact') }}">Contact</a></li>
-  
-    {% if session.get('user_id') %}
-  
-      <li><a href="{{ url_for('auth_bp.logout') }}">Log out</a></li>
-  
-      {% if session.get('is_admin') %}
-        <li><a href="{{ url_for('admin_bp.dashboard') }}">Admin Dashboard</a></li>
-      {% endif %}
-  
-      <li><span>Welcome, {{ session['user_name'] }}!</span></li>
-  
-    {% else %}
-      <li><a href="{{ url_for('auth_bp.login') }}">Log in</a></li>
-      <li><a href="{{ url_for('auth_bp.register') }}">Sign up</a></li>
-    {% endif %}
+  <!-- 왼쪽: 로고 + 메뉴 -->
+  <div class="nav-left">
+    <a class="logo" href="{{ url_for('main_bp.index') }}">
+      <img src="{{ url_for('static', filename='images/logo.png') }}" height="40" style="margin-right: 8px;">
+      Source de Vérité
+    </a>
+    <ul>
+      <li><a href="{{ url_for('main_bp.index') }}">Home</a></li>
+      <li><a href="{{ url_for('product_bp.products') }}">Product</a></li>
+      <li><a href="{{ url_for('contact_bp.contact') }}">Contact</a></li>
+    </ul>
+  </div>
 
-          <!-- 🛒 Cart 아이콘 -->
-          <li>
-            <a href="{{ url_for('cart_bp.cart') }}" data-discover="true">
-              <svg width="44" height="44" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <rect width="44" height="44" rx="8" fill="white"/>
-                <path d="M14.5 15.3333H15.0053C15.8558 15.3333 16.5699 15.9737 16.6621 16.8192L17.3379 23.014C17.4301 23.8595 18.1442 24.4999 18.9947 24.4999H26.205C26.9669 24.4999 27.6317 23.9833 27.82 23.2451L28.9699 18.7358C29.2387 17.682 28.4425 16.6573 27.355 16.6573H17.5M17.5206 27.5207H18.1456M17.5206 28.1457H18.1456M26.6873 27.5207H27.3123M26.6873 28.1457H27.3123M18.6667 27.8333C18.6667 28.2935 18.2936 28.6666 17.8333 28.6666C17.3731 28.6666 17 28.2935 17 27.8333C17 27.373 17.3731 26.9999 17.8333 26.9999C18.2936 26.9999 18.6667 27.373 18.6667 27.8333ZM27.8333 27.8333C27.8333 28.2935 27.4602 28.6666 27 28.6666C26.5398 28.6666 26.1667 28.2935 26.1667 27.8333C26.1667 27.373 26.5398 26.9999 27 26.9999C27.4602 26.9999 27.8333 27.373 27.8333 27.8333Z" stroke="#2A2F2F" stroke-width="1.5" stroke-linecap="round"/>
-              </svg>
-            </a>
-          </li>
-      
-          <!-- 👤 My Page 아이콘 -->
-          <li>
-            <a href="{{ url_for('auth_bp.profile') }}">
-              <svg width="44" height="44" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <rect width="44" height="44" rx="8" fill="white"/>
-                <path d="M22 23.6666C24.3012 23.6666 26.1667 21.8011 26.1667 19.4999C26.1667 17.1987 24.3012 15.3333 22 15.3333C19.6988 15.3333 17.8333 17.1987 17.8333 19.4999C17.8333 21.8011 19.6988 23.6666 22 23.6666ZM22 23.6666C18.3181 23.6666 15.3333 25.9052 15.3333 28.6666M22 23.6666C25.6819 23.6666 28.6667 25.9052 28.6667 28.6666" stroke="#2A2F2F" stroke-width="1.5" stroke-linecap="round"/>
-              </svg>
-            </a>
-          </li>
-  </ul>  
+  <!-- 가운데: Welcome 메시지 -->
+  <div class="nav-center">
+    {% if session.get('is_admin') %}
+        <a href="{{ url_for('admin_bp.dashboard') }}">Admin Dashboard</a>
+      {% endif %}
+    
+  </div>
+
+  <!-- 오른쪽: 아이콘들 -->
+  <div class="nav-right">
+    {% if session.get('user_id') %}
+    <!-- 👤 마이페이지 드롭다운 -->
+    <div class="dropdown">
+      <a class="dropdown-toggle" href="#" title="My Page">
+        <svg width="44" height="44" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect width="44" height="44" rx="8" fill="white"/>
+          <path d="M22 23.6666C24.3012 23.6666 26.1667 21.8011 26.1667 19.4999C26.1667 17.1987 24.3012 15.3333 22 15.3333C19.6988 15.3333 17.8333 17.1987 17.8333 19.4999C17.8333 21.8011 19.6988 23.6666 22 23.6666ZM22 23.6666C18.3181 23.6666 15.3333 25.9052 15.3333 28.6666M22 23.6666C25.6819 23.6666 28.6667 25.9052 28.6667 28.6666" stroke="#2A2F2F" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+      </a>
+      <div class="dropdown-menu">
+        <a href="{{ url_for('auth_bp.profile') }}">내 정보</a>
+        <a href="{{ url_for('auth_bp.logout') }}">로그아웃</a>
+      </div>
+    </div>
+      <a href="{{ url_for('cart_bp.cart') }}" title="Cart">
+        <!-- 🛒 아이콘 -->
+        <svg width="44" height="44" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect width="44" height="44" rx="8" fill="white"/>
+          <path d="M14.5 15.3333H15.0053C15.8558 15.3333 16.5699 15.9737 16.6621 16.8192L17.3379 23.014C17.4301 23.8595 18.1442 24.4999 18.9947 24.4999H26.205C26.9669 24.4999 27.6317 23.9833 27.82 23.2451L28.9699 18.7358C29.2387 17.682 28.4425 16.6573 27.355 16.6573H17.5M17.5206 27.5207H18.1456M17.5206 28.1457H18.1456M26.6873 27.5207H27.3123M26.6873 28.1457H27.3123M18.6667 27.8333C18.6667 28.2935 18.2936 28.6666 17.8333 28.6666C17.3731 28.6666 17 28.2935 17 27.8333C17 27.373 17.3731 26.9999 17.8333 26.9999C18.2936 26.9999 18.6667 27.373 18.6667 27.8333ZM27.8333 27.8333C27.8333 28.2935 27.4602 28.6666 27 28.6666C26.5398 28.6666 26.1667 28.2935 26.1667 27.8333C26.1667 27.373 26.5398 26.9999 27 26.9999C27.4602 26.9999 27.8333 27.373 27.8333 27.8333Z" stroke="#2A2F2F" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+      </a>
+    {% else %}
+      <a href="{{ url_for('auth_bp.login') }}">Log in</a>
+      <a href="{{ url_for('auth_bp.register') }}">Sign up</a>
+    {% endif %}
+  </div>
 </div>
