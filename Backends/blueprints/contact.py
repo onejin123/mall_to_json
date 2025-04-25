@@ -251,7 +251,7 @@ def delete_post(inquiry_id):
     finally:
         conn.close()
 
-    return redirect(url_for("contact/contact_bp.contact", type=inquiry["type"]))
+    return redirect(url_for("contact_bp.contact", type=inquiry["type"]))
 
 
 # ─────────────────────────────────────────────────────────────────────────────
