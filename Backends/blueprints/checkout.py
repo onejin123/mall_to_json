@@ -66,7 +66,7 @@ def checkout():
     finally:
         conn.close()
 
-    return render_template("checkout.html", products=products, total_price=total_price)
+    return render_template("checkout/checkout.html", products=products, total_price=total_price)
 
 @checkout_bp.route("/checkout/complete/<int:order_id>", endpoint="complete")
 def checkout_complete(order_id):
@@ -100,4 +100,4 @@ def checkout_complete(order_id):
         flash("주문 정보를 찾을 수 없습니다.")
         return redirect(url_for("cart_bp.cart"))
 
-    return render_template("checkout_complete.html", order=order, items=items)
+    return render_template("checkout/checkout_complete.html", order=order, items=items)

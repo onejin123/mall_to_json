@@ -68,7 +68,7 @@ def cart():
                     })
     finally:
         conn.close()
-    return render_template("cart.html", products=products, total_price=total_price)
+    return render_template("cart/cart.html", products=products, total_price=total_price)
 
 
 # ─────────────────────────────────────────────────────────────────────────────
