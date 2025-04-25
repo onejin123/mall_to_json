@@ -1,62 +1,102 @@
 <!DOCTYPE html>
 <html lang="ko">
-  <head>
-    <title>Source de Vérité</title>
-    <link rel="icon" href="{{ url_for('static', filename='images/logo.png') }}" type="image/png">
-    <meta charset="utf-8" />
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-  </head>
+<head>
+  <title>Source de Vérité</title>
+  <link rel="icon" href="{{ url_for('static', filename='images/logo.png') }}" type="image/png">
+  <meta charset="utf-8" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
 
-  <body>
-    {% include 'navbar.html' %}
+<body>
+  {% include 'navbar.html' %}
 
-    <!-- 🔁 슬라이드 이미지 영역 -->
-    <a id="sliderLink" href="{{ url_for('product_bp.product_detail', product_id=36) }}">
-      <img class="hero_header" id="heroSlider" src="{{ url_for('static', filename='images/onepiece.jpg') }}" alt="One Piece">
-    </a>
-    
-    <script>
-      // 이미지 링크와 이미지 경로 배열
-      const images = [
-        {
-          src: "{{ url_for('static', filename='images/onepiece.jpg') }}",
-          link: "{{ url_for('product_bp.product_detail', product_id=36) }}"
-        },
-        {
-          src: "{{ url_for('static', filename='images/shoe2.jpg') }}",
-          link: "{{ url_for('product_bp.product_detail', product_id=34) }}"
-        },
-        {
-          src: "{{ url_for('static', filename='images/supreme.jpg') }}",
-          link: "{{ url_for('product_bp.product_detail', product_id=33) }}"
-        }
-      ];
-    
-      let currentIndex = 0;
-      const slider = document.getElementById('heroSlider');
-      const sliderLink = document.getElementById('sliderLink');
-    
-      setInterval(() => {
-        currentIndex = (currentIndex + 1) % images.length;
-        // 이미지 변경
-        slider.src = images[currentIndex].src;
-        // 링크 변경
-        sliderLink.href = images[currentIndex].link;
-      }, 3000);
-    </script>
+  <!-- 🔁 슬라이드 이미지 영역 -->
+  <a id="sliderLink" href="{{ url_for('product_bp.product_detail', product_id=36) }}">
+    <img class="hero_header" id="heroSlider" src="{{ url_for('static', filename='images/onepiece.jpg') }}" alt="One Piece">
+  </a>
 
-    <h1>Our new Products</h1>
-    <div class="products">
+  <script>
+    const images = [
+      {
+        src: "{{ url_for('static', filename='images/onepiece.jpg') }}",
+        link: "{{ url_for('product_bp.product_detail', product_id=36) }}"
+      },
+      {
+        src: "{{ url_for('static', filename='images/shoe2.jpg') }}",
+        link: "{{ url_for('product_bp.product_detail', product_id=34) }}"
+      },
+      {
+        src: "{{ url_for('static', filename='images/supreme.jpg') }}",
+        link: "{{ url_for('product_bp.product_detail', product_id=33) }}"
+      }
+    ];
+
+    let currentIndex = 0;
+    const slider = document.getElementById('heroSlider');
+    const sliderLink = document.getElementById('sliderLink');
+
+    setInterval(() => {
+      currentIndex = (currentIndex + 1) % images.length;
+      slider.src = images[currentIndex].src;
+      sliderLink.href = images[currentIndex].link;
+    }, 3000);
+  </script>
+
+  <!-- 🎯 신상품 슬라이드 -->
+  <h1 style="text-align:center;">Our new Products</h1>
+  <div class="slider-container">
+    <button class="prev-btn" disabled>&#10094;</button>
+    <div class="products-slider" id="productsSlider">
       {% for product in products %}
+      <div class="slide-item">
         <a href="{{ url_for('product_bp.product_detail', product_id=product['id']) }}">
           <img src="{{ url_for('static', filename=product['image_path']) }}" alt="{{ product['name'] }}" class="product-image">
           <p>{{ product['name'] }}</p>
           <p class="price">{{ product['price'] }}&#x20a9;</p>
         </a>
+      </div>
       {% endfor %}
-      <div class="clearfix"></div>
     </div>
+    <button class="next-btn">&#10095;</button>
+  </div>
 
-    {% include 'footer.html' %}
-  </body>
+  <script>
+    const sliderWrapper = document.getElementById('productsSlider');
+    const prevBtn = document.querySelector('.prev-btn');
+    const nextBtn = document.querySelector('.next-btn');
+    const slideItems = sliderWrapper.querySelectorAll('.slide-item');
+
+    const itemsPerView = 4;
+    const totalItems = slideItems.length;
+    const totalSlides = Math.ceil(totalItems / itemsPerView);
+    let currentSlide = 0;
+
+    function updateSliderPosition() {
+      const slideWidth = slideItems[0].offsetWidth;
+      sliderWrapper.style.transform = `translateX(-${currentSlide * slideWidth * itemsPerView}px)`;
+
+      prevBtn.disabled = currentSlide === 0;
+      nextBtn.disabled = currentSlide >= totalSlides - 1;
+    }
+
+    nextBtn.addEventListener('click', () => {
+      if (currentSlide < totalSlides - 1) {
+        currentSlide++;
+        updateSliderPosition();
+      }
+    });
+
+    prevBtn.addEventListener('click', () => {
+      if (currentSlide > 0) {
+        currentSlide--;
+        updateSliderPosition();
+      }
+    });
+
+    window.addEventListener('load', updateSliderPosition);
+    window.addEventListener('resize', updateSliderPosition);
+  </script>
+
+  {% include 'footer.html' %}
+</body>
 </html>
