@@ -96,13 +96,24 @@ def write_post():
                 post_id = cur.fetchone()[0]
 
                 if file and file.filename:
+                    # 파일 이름과 확장자 처리
                     filename = secure_filename(file.filename)
                     ext = os.path.splitext(filename)[1]
                     save_name = f"{post_id}{ext}"
-                    save_path = os.path.join(current_app.root_path, "static", "inquiries_image", save_name)
+                    
+                    # 상대 경로로 저장 경로 설정 (Flask 앱의 root_path를 기준으로)
+                    save_path = os.path.join("C:\\Users\\user\\Desktop\\web2\\secutity_web", "Fronts", "static", "inquiries_image", save_name)
+                    print(save_path)
+                    # 디렉터리가 존재하지 않으면 생성
+                    directory = os.path.dirname(save_path)
+                    if not os.path.exists(directory):
+                        os.makedirs(directory)
+
+                    # 파일 저장
                     file.save(save_path)
 
-                    image_db_path = f"inquiries_image/{save_name}"
+                    # DB 경로 업데이트 (상대 경로)
+                    image_db_path = f"inquiries_image/{save_name}"  # DB에 저장할 상대 경로
                     cur.execute("UPDATE inquiries SET image_path = %s WHERE id = %s", (image_db_path, post_id))
                     conn.commit()
         finally:
@@ -114,9 +125,7 @@ def write_post():
     return render_template("contact/write_post.html", board_type=board_type)
 
 
-# ─────────────────────────────────────────────────────────────────────────────
 # 게시글 수정
-# ─────────────────────────────────────────────────────────────────────────────
 @contact_bp.route("/contact/edit/<int:inquiry_id>", methods=["GET", "POST"], endpoint="edit_post")
 def edit_post(inquiry_id):
     if "user_id" not in session:
@@ -138,8 +147,9 @@ def edit_post(inquiry_id):
                 return redirect(url_for("contact_bp.inquiry_detail", inquiry_id=inquiry_id))
 
             if request.method == "POST":
-                title   = request.form["title"]
+                title = request.form["title"]
                 content = request.form["content"]
+                file = request.files.get("image")
 
                 # 서버 사이드 검증
                 errors = []
@@ -164,15 +174,47 @@ def edit_post(inquiry_id):
                         content=escape(content)
                     )
 
+                # 이미지 처리: 기존 이미지 삭제 후 새 이미지 저장
+                if file and file.filename:
+                    # 기존 이미지 삭제
+                    if inquiry.get("image_path"):
+                        image_path = os.path.join(current_app.root_path, "static", inquiry["image_path"])
+                        if os.path.exists(image_path):
+                            os.remove(image_path)
+
+                    # 파일 이름과 확장자 처리
+                    filename = secure_filename(file.filename)
+                    ext = os.path.splitext(filename)[1]
+                    save_name = f"{inquiry_id}{ext}"
+
+                    # 상대 경로로 저장 경로 설정
+                    save_path = os.path.join(current_app.root_path, "Fronts", "static", "inquiries_image", save_name)
+
+                    # 디렉터리가 존재하지 않으면 생성
+                    directory = os.path.dirname(save_path)
+                    if not os.path.exists(directory):
+                        os.makedirs(directory)
+
+                    # 파일 저장
+                    file.save(save_path)
+
+                    # DB 경로 업데이트
+                    image_db_path = f"./static/inquiries_image/{save_name}"
+                    cursor.execute("UPDATE inquiries SET image_path = %s WHERE id = %s", (image_db_path, inquiry_id))
+                    conn.commit()
+
+                # 제목과 내용 업데이트
                 cursor.execute("UPDATE inquiries SET title = %s, content = %s WHERE id = %s",
                                (title, content, inquiry_id))
                 conn.commit()
+
                 flash("게시글이 수정되었습니다.")
                 return redirect(url_for("contact_bp.inquiry_detail", inquiry_id=inquiry_id))
     finally:
         conn.close()
 
     return render_template("contact/write_post.html", board_type=inquiry["type"], inquiry=inquiry)
+
 
 
 # ─────────────────────────────────────────────────────────────────────────────

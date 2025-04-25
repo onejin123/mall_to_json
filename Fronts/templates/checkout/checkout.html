@@ -39,6 +39,21 @@
       border: none;
       cursor: pointer;
     }
+
+    /* 오른쪽 정렬을 위한 form 내 스타일 */
+    .form-container {
+      display: flex;
+      justify-content: flex-end; /* purchase 버튼을 오른쪽으로 정렬 */
+    }
+
+    .input-container {
+      margin-bottom: 15px;
+    }
+
+    /* 배송지 주소와 결제 방법을 구분지기 위한 스타일 */
+    .address-container, .payment-container {
+      margin-bottom: 30px;
+    }
   </style>
 </head>
 <body>
@@ -51,7 +66,7 @@
     <table>
       <thead>
         <tr>
-          <th>pruduct</th>
+          <th>product</th>
           <th>quantity</th>
           <th>price</th>
           <th>subtotal</th>
@@ -72,37 +87,45 @@
     <h3>total price: {{ total_price }}원</h3>
 
     <form method="post">
-      <!-- 배송지 주소 부분 수정 -->
-      <label for="address">배송지 주소</label>
-      <input type="text" id="address" name="address" placeholder="주소 찾기 버튼을 눌러주세요" readonly required>
-      <input type="text" id="detail_address" name="detail_address" placeholder="상세 주소 입력" required>
-      <button type="button" onclick="execDaumPostcode()" style="margin-bottom: 15px;">주소 찾기</button>
+      <!-- 배송지 주소 부분 -->
+      <div class="address-container">
+        <label for="address">배송지 주소</label>
+        <input type="text" id="address" name="address" placeholder="주소 찾기 버튼을 눌러주세요" readonly required>
+        <input type="text" id="detail_address" name="detail_address" placeholder="상세 주소 입력" required>
+        <button type="button" onclick="execDaumPostcode()" style="margin-bottom: 15px;">주소 찾기</button>
 
-      <script>
-        function execDaumPostcode() {
-          new daum.Postcode({
-            oncomplete: function(data) {
-              let fullAddr = data.address;
-              if (data.addressType === 'R') {
-                if (data.bname !== '') fullAddr += ' ' + data.bname;
-                if (data.buildingName !== '') fullAddr += (fullAddr !== '' ? ', ' + data.buildingName : data.buildingName);
+        <script>
+          function execDaumPostcode() {
+            new daum.Postcode({
+              oncomplete: function(data) {
+                let fullAddr = data.address;
+                if (data.addressType === 'R') {
+                  if (data.bname !== '') fullAddr += ' ' + data.bname;
+                  if (data.buildingName !== '') fullAddr += (fullAddr !== '' ? ', ' + data.buildingName : data.buildingName);
+                }
+                document.getElementById('address').value = fullAddr;
+                document.getElementById('detail_address').focus();
               }
-              document.getElementById('address').value = fullAddr;
-              document.getElementById('detail_address').focus();
-            }
-          }).open();
-        }
-      </script>
+            }).open();
+          }
+        </script>
+      </div>
 
-      <label for="payment_method">결제 방법</label>
-      <select name="payment_method" id="payment_method" required>
-        <option value="">-- 선택하세요 --</option>
-        <option value="card">신용카드</option>
-        <option value="bank">무통장 입금</option>
-        <option value="kakaopay">카카오페이</option>
-      </select>
+      <!-- 결제 방법 텍스트를 주소 찾기 버튼 아래로 옮김 -->
+      <div class="payment-container">
+        <label for="payment_method">결제 방법</label>
+        <select name="payment_method" id="payment_method" required>
+          <option value="">-- 선택하세요 --</option>
+          <option value="card">신용카드</option>
+          <option value="bank">무통장 입금</option>
+          <option value="kakaopay">카카오페이</option>
+        </select>
+      </div>
 
-      <button type="submit">purchase</button>
+      <!-- "purchase" 버튼을 오른쪽으로 정렬 -->
+      <div class="form-container">
+        <button type="submit">purchase</button>
+      </div>
     </form>
   </div>
 

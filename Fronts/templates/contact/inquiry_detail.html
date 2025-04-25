@@ -64,6 +64,7 @@
     </div>
 
     {% if inquiry.image_path %}
+      <!-- 이미지 경로에서 'static/'을 중복 추가하지 않도록 수정 -->
       <img src="{{ url_for('static', filename=inquiry.image_path) }}" alt="첨부 이미지" class="attached-image">
     {% endif %}
 
