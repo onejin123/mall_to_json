@@ -48,7 +48,7 @@ def product_detail(product_id: int):
             descriptions = json.load(f)
 
     return render_template(
-        "product_detail.html",
+        "product/product_detail.html",
         product=product,
         desc=descriptions.get(str(product_id), {})
     )
@@ -85,34 +85,32 @@ def products():
                 SELECT
                     p.id, p.name, p.description, p.price, p.stock_quantity,
                     p.created_at, p.updated_at,
-                    ct.name AS category,
+                    ct.name AS type_name,
+                    c.name AS category_name,
                     pi.url AS image
                 FROM products p
                 JOIN category_types ct ON p.category_type_id = ct.id
+                JOIN categories c ON ct.category_id = c.id
                 LEFT JOIN product_images pi
                   ON pi.product_id = p.id AND pi.is_primary = 1
             """
             where_clauses = []
             params = []
 
-            # 🔍 category & type 필터링
             if selected_category:
                 category_id = next((c["id"] for c in categories if c["name"] == selected_category), None)
 
                 if selected_type:
-                    # 상위 + 하위 동시 필터
                     type_ids = [t["id"] for t in types if t["category_id"] == category_id and t["name"] == selected_type]
                     if type_ids:
                         where_clauses.append("p.category_type_id IN (" + ",".join(["%s"] * len(type_ids)) + ")")
                         params.extend(type_ids)
                 else:
-                    # 상위만 필터
                     type_ids = [t["id"] for t in types if t["category_id"] == category_id]
                     if type_ids:
                         where_clauses.append("p.category_type_id IN (" + ",".join(["%s"] * len(type_ids)) + ")")
                         params.extend(type_ids)
 
-            # 🔍 검색어 필터링
             if search_query:
                 where_clauses.append("(p.name LIKE %s OR ct.name LIKE %s)")
                 params.extend([f"%{search_query}%", f"%{search_query}%"])
@@ -123,17 +121,26 @@ def products():
 
             cursor.execute(query, tuple(params))
             products = cursor.fetchall()
+
+            # 🔥 이미지 경로 재구성
+            for product in products:
+                if product['image']:
+                    product['image_path'] = f"uploads/{product['category_name']}/{product['type_name']}/{product['image']}"
+                else:
+                    product['image_path'] = "default.jpg"  # 대체 이미지
+
     finally:
         conn.close()
 
     return render_template(
-        "product.html",
+        "product/product.html",
         products=products,
         selected_category=selected_category,
         selected_type=selected_type,
         search_query=search_query,
         categories=categories
     )
+
 
 @product_bp.route("/products/new", methods=["GET", "POST"], endpoint="create_product")
 def create_product():
@@ -202,7 +209,7 @@ def create_product():
         flash("상품이 등록되었습니다.")
         return redirect(url_for("product_bp.products"))
 
-    return render_template("create_product.html", categories=categories)
+    return render_template("admin/create_product.html", categories=categories)
 
 @product_bp.route("/product/delete/<int:product_id>", methods=["POST"], endpoint="delete_product")
 def delete_product(product_id):
