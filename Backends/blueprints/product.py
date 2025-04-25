@@ -11,7 +11,6 @@ product_bp = Blueprint("product_bp", __name__)
 # 업로드 디렉터리 설정 (app.py에서 UPLOAD_FOLDER 설정 권장)
 BASE_DIR = Path(__file__).resolve().parent.parent
 UPLOAD_FOLDER = os.path.join(BASE_DIR, "static", "uploads")
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 BASE_DIR   = Path(__file__).resolve().parents[2]  # shopping_web/
 
 # ─────────────────────────────────────────────────────────────────────────────
