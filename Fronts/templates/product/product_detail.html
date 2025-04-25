@@ -42,7 +42,7 @@
 
   <div class="detail-container">
     <div class="detail-image">
-      <img src="{{ url_for('static', filename='uploads/' + product['image']) }}" width="100%">
+      <img src="{{ product.image_url }}" alt="{{ product.name }}" width="100%">
     </div>
     <div class="detail-info">
       <h2>{{ product['name'] }}</h2>

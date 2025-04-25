@@ -53,49 +53,54 @@
     {% include 'navbar.html' %}
 
 
-  <div class="cart-container">
-    <h2>Cart</h2>
-
-    {% if products %}
-    {% for item in products %}
-    <div class="cart-item">
-      <img src="{{ url_for('static', filename='uploads/' + item['image']) }}" width="100%">
-      <div class="cart-item-info">
-        <strong>{{ item.name }}</strong><br>
+    <div class="cart-container">
+      <h2>Cart</h2>
     
-        <!-- 수량 변경 폼 -->
-        <form action="{{ url_for('cart_bp.update_cart') }}" method="POST" style="display:inline-block;">
-          <input type="hidden" name="product_id" value="{{ item.id }}">
-          quantity:
-          <input type="number" name="quantity" value="{{ item.quantity }}" min="1" style="width: 60px;">
-          <button type="submit">Confirm</button>
-        </form>
+      {% if products %}
+        {% for item in products %}
+        <div class="cart-item">
+          {% if item.image_url %}
+            <img src="{{ item.image_url }}" alt="{{ item.name }}">
+          {% else %}
+            <img src="{{ url_for('static', filename='images/no-image.jpg') }}" alt="No Image">
+          {% endif %}
+          <div class="cart-item-info">
+            <strong>{{ item.name }}</strong><br>
     
-        <!-- 삭제 폼 -->
-        <form action="{{ url_for('cart_bp.remove_from_cart') }}" method="POST" style="display:inline-block; margin-left:10px;">
-          <input type="hidden" name="product_id" value="{{ item.id }}">
-          <button type="submit" style="color:red;">Remove</button>
-        </form>
+            <!-- 수량 변경 폼 -->
+            <form action="{{ url_for('cart_bp.update_cart') }}" method="POST" style="display:inline-block;">
+              <input type="hidden" name="product_id" value="{{ item.id }}">
+              quantity:
+              <input type="number" name="quantity" value="{{ item.quantity }}" min="1" style="width: 60px;">
+              <button type="submit">Confirm</button>
+            </form>
     
-        <br>Price: {{ item.price }}&#8361<br>
-        Total: <strong>{{ item.subtotal }}&#8361</strong>
-      </div>
+            <!-- 삭제 폼 -->
+            <form action="{{ url_for('cart_bp.remove_from_cart') }}" method="POST" style="display:inline-block; margin-left:10px;">
+              <input type="hidden" name="product_id" value="{{ item.id }}">
+              <button type="submit" style="color:red;">Remove</button>
+            </form>
+    
+            <br>Price: {{ item.price }}&#8361;<br>
+            Total: <strong>{{ item.subtotal }}&#8361;</strong>
+          </div>
+        </div>
+        {% endfor %}
+    
+        <div class="cart-summary">
+          Total price: <strong>{{ total_price }}&#8361;</strong>
+        </div>
+    
+        <div class="btn-group">
+          <a href="{{ url_for('product_bp.products') }}">Keep shopping</a>
+          <a href="{{ url_for('checkout_bp.checkout') }}">checkout</a>
+        </div>
+      {% else %}
+        <p>Empty</p>
+        <a href="{{ url_for('main_bp.index') }}">Go to shopping →</a>
+      {% endif %}
     </div>
-    {% endfor %}
-
-      <div class="cart-summary">
-        Total price: <strong>{{ total_price }}&#8361</strong>
-      </div>
-
-      <div class="btn-group">
-        <a href="{{ url_for('product_bp.products') }}">Keep shopping</a>
-        <a href="{{ url_for('checkout_bp.checkout') }}">checkout</a>
-      </div>
-    {% else %}
-      <p>Empty</p>
-      <a href="{{ url_for('main_bp.index') }}">Go to shopping →</a>
-    {% endif %}
-  </div>
+    
 
 </body>
 </html>

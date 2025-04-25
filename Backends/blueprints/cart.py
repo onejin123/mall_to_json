@@ -44,31 +44,45 @@ def cart():
     cart_items = session.get("cart", [])
     conn = current_app.get_db_connection()
     products, total_price = [], 0
+
     try:
         with conn.cursor(dictionary=True) as cursor:
             for item in cart_items:
                 cursor.execute("""
-                                    SELECT p.id, p.name, p.price, pi.url AS image
-                                    FROM products p
-                                    LEFT JOIN product_images pi ON pi.product_id = p.id AND pi.is_primary = 1
-                                    WHERE p.id = %s
-                                """, (item["product_id"],))
+                    SELECT
+                        p.id, p.name, p.price,
+                        ct.name AS type_name,
+                        c.name AS category_name,
+                        pi.url AS image
+                    FROM products p
+                    JOIN category_types ct ON p.category_type_id = ct.id
+                    JOIN categories c ON ct.category_id = c.id
+                    LEFT JOIN product_images pi ON pi.product_id = p.id AND pi.is_primary = 1
+                    WHERE p.id = %s
+                """, (item["product_id"],))
                 product = cursor.fetchone()
+
                 if product:
-                    qty       = int(item["quantity"])
-                    subtotal  = product["price"] * qty
+                    qty = int(item["quantity"])
+                    subtotal = product["price"] * qty
                     total_price += subtotal
+
+                    # 🔧 이미지 경로 조립
+                    image_url = url_for('static', filename=f"uploads/{product['category_name']}/{product['type_name']}/{product['image']}") \
+                        if product['image'] else None
+
                     products.append({
                         "id":        product["id"],
                         "name":      product["name"],
                         "price":     product["price"],
-                        "image":     product["image"],
                         "quantity":  qty,
                         "subtotal":  subtotal,
+                        "image_url": image_url,
                     })
     finally:
         conn.close()
-    return render_template("cart/cart.html", products=products, total_price=total_price)
+
+    return render_template("checkout/cart.html", products=products, total_price=total_price)
 
 
 # ─────────────────────────────────────────────────────────────────────────────

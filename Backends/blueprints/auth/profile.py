@@ -10,9 +10,8 @@ def mypage():
         return redirect(url_for("auth_bp.login"))
 
     if request.method == "POST":
-        # POST 처리: 비밀번호 변경 우선, 아니면 개인정보 업데이트
+        # 비밀번호 변경
         if request.form.get("current_password"):
-            # 비밀번호 변경 로직
             current_pw = request.form.get("current_password")
             new_pw     = request.form.get("new_password")
             confirm_pw = request.form.get("confirm_password")
@@ -25,15 +24,12 @@ def mypage():
                         (session["user_id"],)
                     )
                     user_pw = cur.fetchone()["password"]
-                # 현재 비밀번호 확인
                 if not check_password_hash(user_pw, current_pw):
                     flash("현재 비밀번호가 일치하지 않습니다.")
                     return redirect(url_for("auth_bp.profile", tab="info"))
-                # 새 비밀번호 검증
                 if new_pw != confirm_pw:
                     flash("새 비밀번호와 확인이 일치하지 않습니다.")
                     return redirect(url_for("auth_bp.profile", tab="info"))
-                # 해시 생성 후 업데이트
                 hashed = generate_password_hash(new_pw)
                 with conn.cursor() as cur:
                     cur.execute(
@@ -45,7 +41,8 @@ def mypage():
             finally:
                 conn.close()
             return redirect(url_for("auth_bp.profile", tab="info"))
-        # 사용자 정보 업데이트
+
+        # 개인정보 업데이트
         nickname = request.form.get("nickname")
         phone    = request.form.get("phone")
         conn = current_app.get_db_connection()
@@ -77,24 +74,34 @@ def mypage():
         orders = []
         if tab == "orders":
             cur.execute("""
-                SELECT o.id AS order_id, o.created_at, o.total_amount, o.status,
-                       p.name AS product_name, oi.quantity, oi.unit_price
+                SELECT
+                    o.id AS order_id, o.created_at, o.total_amount, o.status,
+                    p.name AS product_name, oi.quantity, oi.unit_price,
+                    pi.url AS image,
+                    cat.name AS category, ct.name AS category_type
                 FROM orders o
                 JOIN order_items oi ON o.id = oi.order_id
                 JOIN products p ON oi.product_id = p.id
+                LEFT JOIN product_images pi ON p.id = pi.product_id AND pi.is_primary = 1
+                JOIN category_types ct ON p.category_type_id = ct.id
+                JOIN categories cat ON ct.category_id = cat.id
                 WHERE o.user_id = %s
                 ORDER BY o.created_at DESC
             """, (session["user_id"],))
             raw_orders = cur.fetchall()
 
-            # created_at 문자열을 datetime 객체로 변환
+            # 주문 내역에 날짜별로 그룹화하기
+            current_date = None
             for order in raw_orders:
                 if isinstance(order["created_at"], str):
                     order["created_at"] = datetime.strptime(order["created_at"], "%Y-%m-%d %H:%M:%S")
+                order["image_url"] = f"uploads/{order['category']}/{order['category_type']}/{order['image']}"
                 orders.append(order)
 
     conn.close()
     return render_template("login/profile.html", tab=tab, user=user, orders=orders)
+
+
 
 
 # Existing view functions...
