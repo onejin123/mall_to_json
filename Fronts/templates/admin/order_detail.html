@@ -1,0 +1,59 @@
+{% extends 'admin/base.html' %}
+{% block title %}주문 상세{% endblock %}
+{% block content %}
+<div class="container-fluid">
+  <h2 class="mt-4">주문 상세</h2>
+  <!-- 주문 정보 -->
+  <div class="card mb-4">
+    <div class="card-body">
+      <p><strong>주문 ID:</strong> {{ order.id }}</p>
+      <p><strong>고객 이메일:</strong> {{ order.user_email }}</p>
+      <p><strong>총 금액:</strong> {{ '{:,.2f}'.format(order.total_amount) }}원</p>
+      <form method="post"
+            action="{{ url_for('admin_bp.update_order', order_id=order.id) }}"
+            class="mb-0">
+        <div class="mb-3">
+          <label for="statusSelect" class="form-label"><strong>상태:</strong></label>
+          <select class="form-select" id="statusSelect" name="status">
+            <option value="PENDING" {% if order.status == 'PENDING' %}selected{% endif %}>PENDING</option>
+            <option value="PAID"    {% if order.status == 'PAID'    %}selected{% endif %}>PAID</option>
+            <option value="SHIPPED" {% if order.status == 'SHIPPED' %}selected{% endif %}>SHIPPED</option>
+            <option value="DELIVERED"{% if order.status == 'DELIVERED' %}selected{% endif %}>DELIVERED</option>
+            <option value="CANCELLED"{% if order.status == 'CANCELLED' %}selected{% endif %}>CANCELLED</option>
+          </select>
+        </div>
+        <button type="submit" class="btn btn-primary btn-sm">상태 업데이트</button>
+      </form>
+      <p><strong>주문일:</strong> {{ order.created_at.strftime('%Y-%m-%d %H:%M') }}</p>
+    </div>
+  </div>
+
+  <!-- 주문 항목 테이블 -->
+  <div class="table-responsive">
+    <table class="table table-striped">
+      <thead class="table-dark">
+        <tr>
+          <th>상품 ID</th>
+          <th>상품명</th>
+          <th>수량</th>
+          <th>단가</th>
+          <th>합계</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in items %}
+        <tr>
+          <td>{{ item.product_id }}</td>
+          <td>{{ item.product_name }}</td>
+          <td>{{ item.quantity }}</td>
+          <td>{{ '{:,.2f}'.format(item.unit_price) }}원</td>
+          <td>{{ '{:,.2f}'.format(item.subtotal) }}원</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <a href="{{ url_for('admin_bp.manage_orders') }}" class="btn btn-secondary mt-3">목록으로 돌아가기</a>
+</div>
+{% endblock %}

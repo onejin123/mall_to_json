@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>상품 등록</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <style>
+    .form-box {
+      width: 500px;
+      margin: 80px auto;
+      padding: 30px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      background: #f9f9f9;
+      box-shadow: 0 0 10px rgba(0,0,0,0.05);
+    }
+
+    .form-box h2 {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .form-box input,
+    .form-box select,
+    .form-box textarea,
+    .form-box button {
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 20px;
+      box-sizing: border-box;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-family: inherit;
+    }
+
+    .form-box button {
+      background-color: #333;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+
+    .form-box button:hover {
+      background-color: #555;
+    }
+
+    optgroup {
+      font-weight: bold;
+    }
+
+    option {
+      padding-left: 10px;
+    }
+  </style>
+</head>
+<body>
+  {% include 'navbar.html' %}
+
+  <div class="form-box">
+    <h2>새 상품 등록</h2>
+    <form method="post" enctype="multipart/form-data">
+      <input
+        type="text"
+        name="name"
+        placeholder="상품명"
+        required
+      >
+      <select name="category_type_id" required>
+        <option value="" disabled selected>카테고리를 선택하세요</option>
+        {% for cat in categories %}
+          <optgroup label="{{ cat.name }}">
+            {% for t in cat.types %}
+              <option value="{{ t.id }}">{{ t.name }}</option>
+            {% endfor %}
+          </optgroup>
+        {% endfor %}
+      </select>
+      <textarea
+        name="description"
+        placeholder="상품 설명"
+        rows="4"
+        required
+      ></textarea>
+      <input
+        type="number"
+        name="stock_quantity"
+        placeholder="재고 수량"
+        min="0"
+        required
+      >
+      <input
+        type="number"
+        name="price"
+        placeholder="가격"
+        step="0.01"
+        required
+      >
+      <input
+        type="file"
+        name="image"
+        accept="image/*"
+        required
+      >
+      <button type="submit">등록</button>
+    </form>
+  </div>
+</body>
+</html>
