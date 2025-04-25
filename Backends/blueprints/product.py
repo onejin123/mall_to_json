@@ -141,13 +141,20 @@ def products():
     )
 
 
-@product_bp.route("/products/new", methods=["GET", "POST"], endpoint="create_product")
+# 업로드 루트 설정
+UPLOAD_ROOT = os.path.join(os.path.dirname(os.path.dirname(__file__)), '..', 'Fronts', 'static', 'uploads')
+
+def get_upload_path(category_name, type_name):
+    rel_path = os.path.join("..", "Fronts", "static", "uploads", category_name, type_name)
+    # 절대 경로 변환 후 반환
+    return os.path.abspath(os.path.join(current_app.root_path, rel_path))
+
+@product_bp.route("/new", methods=["GET", "POST"], endpoint="create_product")
 def create_product():
-    if not session.get("is_admin") == 1:  # 관리자만 접근 허용
+    if not session.get("is_admin") == 1:
         flash("관리자 권한이 필요합니다.")
         return redirect(url_for("product_bp.products"))
 
-    # ─────────────── GET 요청 시: 카테고리 & 타입 조회 ───────────────
     conn = current_app.get_db_connection()
     try:
         with conn.cursor(dictionary=True) as cursor:
@@ -159,49 +166,60 @@ def create_product():
     finally:
         conn.close()
 
-    # 타입을 카테고리별로 그룹핑
     grouped = defaultdict(list)
     for t in types:
         grouped[t["category_id"]].append(t)
     for cat in categories:
         cat["types"] = grouped.get(cat["id"], [])
 
-    # ─────────────── POST 요청 시: 상품 등록 ───────────────
     if request.method == "POST":
-        name            = request.form["name"]
-        category_type_id= request.form["category_type_id"]
-        price           = request.form["price"]
-        description     = request.form["description"]
-        stock_quantity  = request.form["stock_quantity"]
+        name = request.form["name"]
+        category_type_id = request.form["category_type_id"]
+        price = request.form["price"]
+        description = request.form["description"]
+        stock_quantity = request.form["stock_quantity"]
 
-        # 이미지 업로드 처리
         file = request.files.get("image")
         if not file or file.filename == "":
             flash("이미지를 업로드해주세요.")
             return redirect(url_for("product_bp.create_product"))
 
         filename = secure_filename(file.filename)
-        file_path = os.path.join(UPLOAD_FOLDER, filename)
-        file.save(file_path)
 
-        # DB에 상품 등록
         conn = current_app.get_db_connection()
         try:
-            with conn.cursor() as cursor:
+            with conn.cursor(dictionary=True) as cursor:
+                cursor.execute("""
+                    SELECT c.name AS category_name, ct.name AS type_name
+                    FROM category_types ct
+                    JOIN categories c ON ct.category_id = c.id
+                    WHERE ct.id = %s
+                """, (category_type_id,))
+                cat_info = cursor.fetchone()
+
+                category_name = cat_info["category_name"]
+                type_name = cat_info["type_name"]
+                upload_folder = get_upload_path(category_name, type_name)
+                os.makedirs(upload_folder, exist_ok=True)
+
+                file_path = os.path.join(upload_folder, filename)
+                file.save(file_path)
+
+                relative_path = f"{category_name}/{type_name}/{filename}"
+
                 cursor.execute("""
                     INSERT INTO products (name, category_type_id, description, price, stock_quantity, created_at, updated_at)
                     VALUES (%s, %s, %s, %s, %s, NOW(), NOW())
                 """, (name, category_type_id, description, price, stock_quantity))
-                
+
                 product_id = cursor.lastrowid
 
-                # product_images 테이블이 있다면 여기에 추가
                 cursor.execute("""
                     INSERT INTO product_images (product_id, url, is_primary)
                     VALUES (%s, %s, %s)
-                """, (product_id, filename, 1))
+                """, (product_id, relative_path, 1))
 
-            conn.commit()
+                conn.commit()
         finally:
             conn.close()
 
@@ -209,6 +227,8 @@ def create_product():
         return redirect(url_for("product_bp.products"))
 
     return render_template("admin/create_product.html", categories=categories)
+
+
 
 @product_bp.route("/product/delete/<int:product_id>", methods=["POST"], endpoint="delete_product")
 def delete_product(product_id):
