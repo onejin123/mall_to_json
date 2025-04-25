@@ -145,6 +145,29 @@
         </form>
       </div>
 
+      <hr class="my-4">
+      <div class="info-box mt-4">
+        <h2>비밀번호 변경</h2>
+        <form method="post" action="{{ url_for('auth_bp.profile') }}">
+          <div class="mb-3">
+            <label for="current_password" class="form-label">현재 비밀번호</label>
+            <input type="password" id="current_password" name="current_password"
+                   class="form-control" placeholder="현재 비밀번호" required>
+          </div>
+          <div class="mb-3">
+            <label for="new_password" class="form-label">새 비밀번호</label>
+            <input type="password" id="new_password" name="new_password"
+                   class="form-control" placeholder="새 비밀번호" required>
+          </div>
+          <div class="mb-3">
+            <label for="confirm_password" class="form-label">비밀번호 확인</label>
+            <input type="password" id="confirm_password" name="confirm_password"
+                   class="form-control" placeholder="비밀번호 확인" required>
+          </div>
+          <button type="submit" class="btn btn-warning">비밀번호 변경</button>
+        </form>
+      </div>
+
       {% elif tab == 'orders' %}
       <div class="orders-box">
         <h2>주문 내역</h2>

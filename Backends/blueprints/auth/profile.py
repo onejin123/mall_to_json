@@ -1,3 +1,4 @@
+from werkzeug.security import check_password_hash, generate_password_hash
 from flask import render_template, redirect, url_for, flash, session, request, current_app
 from datetime import datetime
 from . import auth_bp
@@ -9,6 +10,36 @@ def mypage():
         return redirect(url_for("auth_bp.login"))
 
     if request.method == "POST":
+        if request.form.get("current_password"):
+            # 비밀번호 변경 처리
+            current_pw = request.form.get("current_password")
+            new_pw     = request.form.get("new_password")
+            confirm_pw = request.form.get("confirm_password")
+
+            conn = current_app.get_db_connection()
+            try:
+                with conn.cursor(dictionary=True) as cur:
+                    cur.execute("SELECT password FROM users WHERE id = %s", (session["user_id"],))
+                    user_pw = cur.fetchone()["password"]
+                # 현재 비밀번호 확인
+                if not check_password_hash(user_pw, current_pw):
+                    flash("현재 비밀번호가 일치하지 않습니다.")
+                    return redirect(url_for("auth_bp.profile", tab="info"))
+                if new_pw != confirm_pw:
+                    flash("새 비밀번호와 확인이 일치하지 않습니다.")
+                    return redirect(url_for("auth_bp.profile", tab="info"))
+                # 비밀번호 업데이트
+                hashed = generate_password_hash(new_pw)
+                with conn.cursor() as cur:
+                    cur.execute(
+                        "UPDATE users SET password = %s, updated_at = NOW() WHERE id = %s",
+                        (hashed, session["user_id"])
+                    )
+                conn.commit()
+                flash("비밀번호가 변경되었습니다.")
+            finally:
+                conn.close()
+            return redirect(url_for("auth_bp.profile", tab="info"))
         # 사용자 정보 업데이트
         nickname = request.form.get("nickname")
         phone    = request.form.get("phone")
