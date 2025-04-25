@@ -70,6 +70,21 @@
   <div class="contact-container">
     <h2>{{ '문의 수정' if inquiry else '글쓰기' }}</h2>
 
+    {% with flashes = get_flashed_messages(with_categories=true) %}
+      {% set error_msgs = flashes
+           | selectattr(0, 'ne', 'success')
+           | selectattr(0, 'ne', 'message')
+           | map(attribute=1)
+           | list %}
+      {% if error_msgs %}
+        <ul style="color: red; margin-bottom: 20px;">
+          {% for msg in error_msgs %}
+            <li>{{ msg }}</li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+    {% endwith %}
+
     <form method="post" enctype="multipart/form-data">
       
       <!-- 관리자일 경우 게시판 선택 가능 -->
@@ -86,10 +101,10 @@
 
       <label for="title">제목</label>
       <input type="text" name="title" id="title" placeholder="제목을 입력하세요" required
-             value="{{ inquiry.title if inquiry else '' }}">
+             value="{{ title or '' }}">
 
       <label for="content">내용</label>
-      <textarea name="content" id="content" rows="8" placeholder="문의 내용을 입력해주세요" required>{{ inquiry.content if inquiry else '' }}</textarea>
+      <textarea name="content" id="content" rows="8" placeholder="문의 내용을 입력해주세요" required>{{ content or '' }}</textarea>
 
       {% if inquiry and inquiry.image_path %}
         <div class="current-image">
