@@ -29,7 +29,7 @@ def reset_password_request():
         flash(f"비밀번호 재설정 링크: {reset_url}")
         return redirect(url_for("auth_bp.login"))
 
-    return render_template("reset_password_request.html")
+    return render_template("login/reset_password_request.html")
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -57,4 +57,4 @@ def reset_password(token):
             conn.close()
         return redirect(url_for("auth_bp.login"))
 
-    return render_template("reset_password.html", token=token)
+    return render_template("login/reset_password.html", token=token)
