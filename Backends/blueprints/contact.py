@@ -39,7 +39,7 @@ def contact():
 @contact_bp.route("/contact/write", methods=["GET", "POST"], endpoint="write_post")
 def write_post():
     if "user_id" not in session:
-        flash("로그인이 필요합니다.")
+        #flash("로그인이 필요합니다.")
         return redirect(url_for("auth_bp.login"))
 
     board_type = request.args.get("type", "QNA")
@@ -129,7 +129,7 @@ def write_post():
 @contact_bp.route("/contact/edit/<int:inquiry_id>", methods=["GET", "POST"], endpoint="edit_post")
 def edit_post(inquiry_id):
     if "user_id" not in session:
-        flash("로그인이 필요합니다.")
+        #flash("로그인이 필요합니다.")
         return redirect(url_for("auth_bp.login"))
 
     conn = current_app.get_db_connection()
@@ -139,11 +139,11 @@ def edit_post(inquiry_id):
             inquiry = cursor.fetchone()
 
             if not inquiry:
-                flash("글을 찾을 수 없습니다.")
+                #flash("글을 찾을 수 없습니다.")
                 return redirect(url_for("contact_bp.contact", type="QNA"))
 
             if session["user_id"] != inquiry["user_id"] and not session.get("is_admin"):
-                flash("수정 권한이 없습니다.")
+                #flash("수정 권한이 없습니다.")
                 return redirect(url_for("contact_bp.inquiry_detail", inquiry_id=inquiry_id))
 
             if request.method == "POST":
@@ -208,7 +208,7 @@ def edit_post(inquiry_id):
                                (title, content, inquiry_id))
                 conn.commit()
 
-                flash("게시글이 수정되었습니다.")
+                #flash("게시글이 수정되었습니다.")
                 return redirect(url_for("contact_bp.inquiry_detail", inquiry_id=inquiry_id))
     finally:
         conn.close()
@@ -223,7 +223,7 @@ def edit_post(inquiry_id):
 @contact_bp.route("/contact/delete/<int:inquiry_id>", methods=["POST"], endpoint="delete_post")
 def delete_post(inquiry_id):
     if "user_id" not in session:
-        flash("로그인이 필요합니다.")
+        #flash("로그인이 필요합니다.")
         return redirect(url_for("auth_bp.login"))
 
     conn = current_app.get_db_connection()
@@ -234,12 +234,12 @@ def delete_post(inquiry_id):
             inquiry = cursor.fetchone()
 
             if not inquiry:
-                flash("게시글이 존재하지 않습니다.")
+                #flash("게시글이 존재하지 않습니다.")
                 return redirect(url_for("contact_bp.contact", type="QNA"))
 
             # 삭제 권한 확인
             if session["user_id"] != inquiry["user_id"] and not session.get("is_admin"):
-                flash("삭제 권한이 없습니다.")
+                #flash("삭제 권한이 없습니다.")
                 return redirect(url_for("contact_bp.inquiry_detail", inquiry_id=inquiry_id))
 
             # 답변 삭제: 해당 문의글에 달린 답변들을 삭제
@@ -256,10 +256,10 @@ def delete_post(inquiry_id):
             cursor.execute("DELETE FROM inquiries WHERE id = %s", (inquiry_id,))
             conn.commit()
 
-        flash("게시글과 답변이 삭제되었습니다.")
+        #flash("게시글과 답변이 삭제되었습니다.")
     except Exception as e:
         conn.rollback()  # 오류 발생 시 롤백
-        flash("게시글 삭제 중 오류가 발생했습니다.")
+        #flash("게시글 삭제 중 오류가 발생했습니다.")
     finally:
         conn.close()
 
@@ -303,14 +303,14 @@ def inquiry_detail(inquiry_id):
             # 답변 등록 및 수정 처리 (POST 요청)
             if request.method == "POST":
                 if not session.get('is_admin'):
-                    flash("관리자만 답변을 작성하거나 수정할 수 있습니다.")
+                    #flash("관리자만 답변을 작성하거나 수정할 수 있습니다.")
                     return redirect(url_for("contact_bp.inquiry_detail", inquiry_id=inquiry_id))
 
                 answer_content = request.form.get("content")
                 answer_id = request.form.get("answer_id")  # 수정할 답변의 ID
 
                 if not answer_content:
-                    flash("답변 내용을 입력하세요.")
+                    #flash("답변 내용을 입력하세요.")
                     return render_template("contact/inquiry_detail.html", inquiry=inquiry, answers=answers, answer_to_edit=answer_to_edit)
 
                 # 답변 등록 또는 수정
@@ -348,7 +348,7 @@ def inquiry_detail(inquiry_id):
 @contact_bp.route("/contact/answer/<int:inquiry_id>", methods=["POST"], endpoint="add_answer")
 def add_answer(inquiry_id):
     if "user_id" not in session:
-        flash("로그인이 필요합니다.")
+        #flash("로그인이 필요합니다.")
         return redirect(url_for("auth_bp.login"))
 
     content = request.form["content"]
