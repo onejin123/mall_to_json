@@ -5,205 +5,56 @@
   <title>전체 상품</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
   <style>
-    .container {
+    body {
+      margin: 0;
+      font-family: 'Noto Sans KR', sans-serif;
+    }
+
+    .page-wrapper {
       display: flex;
-      width: 1000px;
-      margin: 50px auto;
+      flex-direction: column;
+    }
+
+    .content {
+      display: flex;
+      margin: 0 auto;
+      max-width: 1440px;
+      padding: 40px;
     }
 
     .sidebar {
-      width: 200px;
-      padding-right: 20px;
-      border-right: 1px solid #ccc;
-    }
-
-    .sidebar h3 {
-      margin-top: 0;
-    }
-
-    .sidebar ul {
-      list-style: none;
-      padding-left: 0;
-    }
-
-    .sidebar li {
-      margin-bottom: 10px;
-    }
-
-    .sidebar a {
-      text-decoration: none;
-      color: #333;
+      width: 180px;
+      margin-right: 40px;
     }
 
     .main-content {
       flex: 1;
-      padding-left: 30px;
-    }
-
-    .product-list {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 20px;
-    }
-
-    .product-item {
-      width: 200px;
-      text-align: center;
-    }
-
-    .product-item img {
-      width: 100%;
-      height: 200px;
-      object-fit: contain;
-      margin-bottom: 10px;
-    }
-
-    .admin-actions {
-      margin-bottom: 20px;
-    }
-
-    .search-box {
-      position: relative;
-      width: 240px;
-      display: flex;
-      align-items: center;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      padding: 6px 10px;
-      background: white;
-      transition: all 0.3s ease;
-    }
-
-    .search-box:hover {
-      border-color: #333;
-      background: #f5f5f5;
-    }
-
-    .search-icon {
-      margin-right: 8px;
-      transition: fill 0.3s ease;
-    }
-
-    .search-box:hover .search-icon {
-      fill: #333;
-    }
-
-    .search-input {
-      border: none;
-      outline: none;
-      font-size: 14px;
-      width: 100%;
-      background: transparent;
-      color: #333;
-    }
-
-    .search-input::placeholder {
-      color: #aaa;
-      font-weight: 500;
     }
 
   </style>
 </head>
 <body>
-  {% include 'navbar.html' %}
+  <div class="page-wrapper">
+    {% include 'navbar.html' %}
 
-  <div class="container">
-    <!-- 왼쪽: 카테고리 사이드바 -->
-    <div class="sidebar">
-      <h3>Category</h3>
-      <ul>
-        <!-- All 항목 -->
-        <li>
-          <a href="{{ url_for('product_bp.products') }}"
-             {% if not selected_category %}style="font-weight:bold;"{% endif %}>
-            All
-          </a>
-        </li>
-    
-        <!-- 상위 카테고리만 별도로 출력 -->
-        {% for cat in categories %}
-        <li>
-          <a href="{{ url_for('product_bp.products', category=cat.name) }}"
-             {% if selected_category == cat.name and not selected_type %}style="font-weight:bold;"{% endif %}>
-            {{ cat.name }}
-          </a>
-        </li>
-        {% endfor %}
-      </ul>
-    
-      <h4 style="margin-top:20px;">Sub Types</h4>
-      <ul>
-        {% for cat in categories %}
-          {% if selected_category == cat.name %}
-            {% for type in cat.types %}
-            <li>
-              <a href="{{ url_for('product_bp.products', category=cat.name, type=type.name) }}"
-                 {% if selected_type == type.name %}style="font-weight:bold;"{% endif %}>
-                 {{ type.name }}
-              </a>
-            </li>
-            {% endfor %}
-          {% endif %}
-        {% endfor %}
-      </ul>
-    </div>
-    
-
-
-    <!-- 오른쪽: 상품 목록 + 관리자 기능 -->
-    <div class="main-content">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-        <h1 style="margin: 0;">상품 목록</h1>
-      
-        <!-- 🔍 검색 영역 -->
-        <form method="get" action="{{ url_for('product_bp.products') }}">
-          <div class="search-box">
-            <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 0 24 24" width="20">
-              <path fill="#aaa" d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0016 9.5 6.5 6.5 0 109.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zM10 14a4 4 0 110-8 4 4 0 010 8z"/>
-            </svg>
-            <input type="text"
-                   name="q"
-                   placeholder="Search"
-                   value="{{ search_query or '' }}"
-                   class="search-input" />
-            {% if selected_category %}
-              <input type="hidden" name="category" value="{{ selected_category }}">
-            {% endif %}
-            {% if selected_type %}
-              <input type="hidden" name="type" value="{{ selected_type }}">
-            {% endif %}
-          </div>
-        </form>
+    <div class="content">
+      <div class="sidebar">
+        {% include 'product/filter.html' %}
       </div>
-      
 
-      <!-- 관리자: 신규 등록 링크 -->
-      {% if session.get('is_admin') %}
-      <div class="admin-actions">
-        <a href="{{ url_for('product_bp.create_product') }}">+ 새 상품 등록</a>
-      </div>
-      {% endif %}
-
-      <div class="product-list">
-        {% for product in products %}
-        <div class="product-item">
-          <a href="{{ url_for('product_bp.product_detail', product_id=product['id']) }}">
-            <img src="{{ url_for('static', filename=product.image_path) }}" alt="{{ product.name }}">
-
-            <p>{{ product['name'] }}</p>
-            <p class="price">{{ product['price'] }}&#x20a9;</p>
-          </a>
-
-          <!-- 관리자: 삭제 버튼 -->
-          {% if session.get('is_admin') %}
-          <form method="post"
-                action="{{ url_for('product_bp.delete_product', product_id=product['id']) }}"
-                style="margin-top:8px;">
-            <button type="submit">삭제</button>
-          </form>
-          {% endif %}
+      <div class="main-content">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+          <h1 style="margin: 0;">상품 목록</h1>
+          {% include "product/search.html" %}
         </div>
-        {% endfor %}
+
+        {% if session.get('is_admin') %}
+        <div class="admin-actions" style="margin-bottom: 20px;">
+          <a href="{{ url_for('product_bp.create_product') }}">+ 새 상품 등록</a>
+        </div>
+        {% endif %}
+
+        {% include "product/card.html" %}
       </div>
     </div>
   </div>
