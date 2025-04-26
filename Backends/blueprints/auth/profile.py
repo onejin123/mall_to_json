@@ -15,6 +15,10 @@ def mypage():
             current_pw = request.form.get("current_password")
             new_pw     = request.form.get("new_password")
             confirm_pw = request.form.get("confirm_password")
+            # 새 비밀번호 길이 검증: 최소 6자
+            if len(new_pw) < 6:
+                flash("새 비밀번호는 최소 6자 이상이어야 합니다.")
+                return redirect(url_for("auth_bp.profile", tab="info"))
 
             conn = current_app.get_db_connection()
             try:

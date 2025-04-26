@@ -60,10 +60,24 @@
     {% endwith %}
 
     <form method="post">
-        <input type="text" name="nickname" placeholder="nickname *" required maxlength="50">
-        <input type="email" name="email" placeholder="email *" required maxlength="100">
-        <input type="password" name="password" placeholder="password *" required maxlength="255">
-        <input type="tel" name="phone" placeholder="phone" maxlength="20">
+        <input type="text"
+               name="nickname"
+               placeholder="nickname *"
+               required
+               maxlength="50"
+               value="{{ nickname or '' }}">
+        <input type="email"
+               name="email"
+               placeholder="email *"
+               required
+               maxlength="100"
+               value="{{ email or '' }}">
+        <input type="password" name="password" placeholder="password * (최소 6자)" required minlength="6" maxlength="255">
+        <input type="tel"
+               name="phone"
+               placeholder="phone"
+               maxlength="20"
+               value="{{ phone or '' }}">
         <button type="submit">Sign up</button>
     </form>
 
