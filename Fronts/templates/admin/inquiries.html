@@ -23,7 +23,8 @@
           <td>{{ i.author }}</td>
           <td>{{ i.created_at.strftime('%Y-%m-%d') }}</td>
           <td>
-            <a href="{{ url_for('contact_bp.edit_post', inquiry_id=i.id) }}"
+            <!-- 수정/답변 버튼: 상세 페이지로 이동 -->
+            <a href="{{ url_for('contact_bp.inquiry_detail', inquiry_id=i.id) }}"
                class="btn btn-sm btn-primary">답변/수정</a>
             <form method="post"
                   action="{{ url_for('contact_bp.delete_post', inquiry_id=i.id) }}"

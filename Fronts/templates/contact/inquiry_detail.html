@@ -13,29 +13,45 @@
       border-radius: 6px;
       background: #fafafa;
     }
+
     .detail-container h2 {
       margin-bottom: 10px;
     }
+
     .meta {
       color: #777;
       font-size: 14px;
       margin-bottom: 20px;
     }
+
     .content {
       font-size: 16px;
       margin-bottom: 30px;
       white-space: pre-wrap;
     }
+
+    /* 글 박스 스타일 */
+    .content-box {
+      background-color: #fff;
+      padding: 15px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+    }
+
+    /* 답변 박스 스타일 */
     .answer-box {
       background: #f0f4ff;
       padding: 15px;
       border-left: 5px solid #007bff;
       margin-top: 30px;
+      border-radius: 6px;
     }
+
     .post-buttons {
       text-align: right;
       margin-top: 20px;
     }
+
     .post-buttons button {
       padding: 8px 15px;
       margin-left: 10px;
@@ -45,36 +61,98 @@
       cursor: pointer;
       border-radius: 4px;
     }
+
     img.attached-image {
-      max-width: 100%;
+      max-width: 50%;         /* 최대 너비를 100%로 설정하여 컨테이너에 맞게 크기를 조절 */
+      height: auto;           /* 높이는 자동으로 비례하여 조정 */
       margin-top: 20px;
       border: 1px solid #ddd;
+    }
+
+    /* 답변 수정 폼 스타일 */
+    .answer-form textarea {
+      width: 100%;
+      padding: 10px;
+      margin-top: 20px;
+      margin-bottom: 15px;
+    }
+
+    .answer-form button {
+      padding: 12px 20px;
+      background-color: #333;
+      color: white;
+      border: none;
+      cursor: pointer;
     }
   </style>
 </head>
 <body>
+
   {% include 'navbar.html' %}
 
   <div class="detail-container">
-    <h2>{{ inquiry.title }}</h2>
-    <div class="meta">Writer: {{ inquiry.nickname }} | Date: {{ inquiry.created_at }}</div>
+    <!-- 글 내용 박스 -->
+    <div class="content-box">
+      <h2>{{ inquiry.title }}</h2>
+      <div class="meta">Writer: {{ inquiry.nickname }} | Date: {{ inquiry.created_at }}</div>
 
-    <div class="content">
-      {{ inquiry.content | safe }}
+      <div class="content">
+        {{ inquiry.content | safe }}
+      </div>
+
+      {% if inquiry.image_path %}
+        <img src="{{ url_for('static', filename=inquiry.image_path) }}" alt="첨부 이미지" class="attached-image">
+      {% endif %}
     </div>
 
-    {% if inquiry.image_path %}
-      <!-- 이미지 경로에서 'static/'을 중복 추가하지 않도록 수정 -->
-      <img src="{{ url_for('static', filename=inquiry.image_path) }}" alt="첨부 이미지" class="attached-image">
+    <!-- 답변 박스 -->
+    {% if answers %}
+      <h4>답변</h4>
+      {% for answer in answers %}
+        <div class="answer-box">
+          <strong>{{ answer.answerer }} | {{ answer.created_at }}</strong>
+          <p>{{ answer.content | safe }}</p>
+
+          {% if session.get('is_admin') %}
+            <!-- 답변 수정 버튼 -->
+            <a href="{{ url_for('contact_bp.inquiry_detail', inquiry_id=inquiry.id) }}?answer_id={{ answer.id }}">수정</a>
+          {% endif %}
+        </div>
+      {% endfor %}
+    {% else %}
+      <p>이 문의글에는 답변이 없습니다.</p>
     {% endif %}
 
-    {% if inquiry.answer %}
-      <div class="answer-box">
-        <strong>Answer</strong><br>
-        {{ inquiry.answer }}
+    <!-- 답변 수정 폼 (수정 버튼 클릭시 보여짐) -->
+    {% if request.args.get('answer_id') %}
+      {% set answer_id = request.args.get('answer_id') %}
+      <div class="answer-form">
+        <form method="POST">
+          <textarea name="content" required>
+            {% for answer in answers %}
+              {% if answer.id == answer_id %}
+                {{ answer.content }}
+              {% endif %}
+            {% endfor %}
+          </textarea>
+          <input type="hidden" name="answer_id" value="{{ answer_id }}">
+          <button type="submit">답변 수정</button>
+        </form>
       </div>
     {% endif %}
 
+    <!-- 답변 작성 폼 -->
+    {% if session.get('is_admin') and not answers %}
+      <div class="answer-form">
+        <form method="POST">
+          <label for="content">답변을 작성하세요:</label>
+          <textarea name="content" required></textarea>
+          <button type="submit">답변 작성</button>
+        </form>
+      </div>
+    {% endif %}
+
+    <!-- 글 수정 및 삭제 버튼 -->
     {% if session.get('is_admin') or session.get('user_id') == inquiry.user_id %}
       <div class="post-buttons">
         <form method="get" action="{{ url_for('contact_bp.edit_post', inquiry_id=inquiry.id) }}" style="display:inline;">
@@ -86,5 +164,6 @@
       </div>
     {% endif %}
   </div>
+
 </body>
 </html>
