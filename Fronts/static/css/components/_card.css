@@ -1,0 +1,23 @@
+.product-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 30px;
+  justify-content: flex-start;
+}
+
+.product-item {
+  width: calc(20% - 24px); /* 5개씩 정렬 */
+  text-align: center;
+}
+
+.product-item img {
+  width: 100%;
+  height: 240px;
+  object-fit: cover;
+  margin-bottom: 10px;
+}
+  
+  .admin-actions {
+    margin-bottom: 20px;
+  }
+  

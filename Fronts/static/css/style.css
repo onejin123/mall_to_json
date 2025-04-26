@@ -1,8 +1,10 @@
-
+@import url("components/_filter.css");
+@import url("components/_search.css");
+@import url("components/_card.css");
 * {
     box-sizing: border-box;
   }
-  
+
   body {
     margin: 0;
     min-width: 992px;

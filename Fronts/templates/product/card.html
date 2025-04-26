@@ -1,0 +1,19 @@
+<div class="product-list">
+    {% for product in products %}
+    <div class="product-item">
+      <a href="{{ url_for('product_bp.product_detail', product_id=product['id']) }}">
+        <img src="{{ url_for('static', filename=product.image_path) }}" alt="{{ product.name }}">
+        <p>{{ product['name'] }}</p>
+        <p class="price">{{ product['price'] }}&#x20a9;</p>
+      </a>
+  
+      {% if session.get('is_admin') %}
+      <form method="post"
+            action="{{ url_for('product_bp.delete_product', product_id=product['id']) }}"
+            style="margin-top:8px;">
+        <button type="submit">삭제</button>
+      </form>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
