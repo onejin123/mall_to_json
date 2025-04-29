@@ -1,0 +1,37 @@
+version: '3.8'
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Backends/Dockerfile
+    container_name: mall_backend
+    restart: always
+    env_file:
+      - Backends/.env           # MYSQL_HOST=DB_IP, MYSQL_USER 등
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    networks:
+      - mallnet
+
+  db:
+    image: mysql:8.0
+    container_name: mall_db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: Root비밀번호
+      MYSQL_DATABASE: your_db
+      MYSQL_USER: appuser
+      MYSQL_PASSWORD: 앱비밀번호
+    volumes:
+      - mall_db_data:/var/lib/mysql
+    networks:
+      - mallnet
+
+volumes:
+  mall_db_data:
+
+networks:
+  mallnet:
+    driver: bridge
