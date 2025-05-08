@@ -5,9 +5,9 @@ WORKDIR /app
 RUN apt update && apt install -y build-essential
 
 # 소스 복사 & 의존성 설치
-COPY Backends/requirements.txt .
+COPY ./requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
-COPY Backends/ .
+COPY . .
 
 # .env는 docker-compose.yml 또는 run 시 mount 권장
 ENV FLASK_ENV=production
@@ -16,4 +16,6 @@ ENV FLASK_ENV=production
 EXPOSE 8000
 
 # Gunicorn으로 실행
-CMD ["gunicorn", "--workers", "3", "--bind", "0.0.0.0:8000", "app:create_app()"]
+# Dockerfile 예시
+CMD ["gunicorn", "--workers", "3", "--bind", "0.0.0.0:8000", "app:app"]
+

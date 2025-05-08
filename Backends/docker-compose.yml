@@ -1,29 +1,33 @@
 version: '3.8'
+
 services:
   backend:
-    build:
-      context: .
-      dockerfile: Backends/Dockerfile
     container_name: mall_backend
-    restart: always
-    env_file:
-      - Backends/.env           # MYSQL_HOST=DB_IP, MYSQL_USER 등
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    command: gunicorn --bind 0.0.0.0:8000 app:app
+    expose:
+      - "8000"
     ports:
       - "8000:8000"
+    env_file:
+      - ./.env           # MYSQL_HOST, MYSQL_USER 등
+    restart: always
     depends_on:
       - db
-    networks:
-      - mallnet
+    networks:         # ← network → networks 로 수정
+      - mall_network
 
   db:
-    image: mysql:8.0
     container_name: mall_db
+    image: mysql:8.0
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: Root비밀번호
-      MYSQL_DATABASE: your_db
-      MYSQL_USER: appuser
-      MYSQL_PASSWORD: 앱비밀번호
+      MYSQL_ROOT_PASSWORD: 0000
+      MYSQL_DATABASE: mall
+      MYSQL_USER: appuser1
+      MYSQL_PASSWORD: 0000
     volumes:
       - mall_db_data:/var/lib/mysql
     networks:
@@ -33,5 +37,8 @@ volumes:
   mall_db_data:
 
 networks:
+  mall_network:
+    external: true
   mallnet:
     driver: bridge
+

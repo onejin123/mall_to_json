@@ -1,9 +1,9 @@
-from flask import Blueprint, render_template, current_app
+from flask import Blueprint, jsonify, current_app
 
 main_bp = Blueprint("main_bp", __name__)
 
-@main_bp.route('/')
-def index():
+@main_bp.route('/api/products/latest', methods=['GET'])
+def latest_products():
     conn = current_app.get_db_connection()
     try:
         with conn.cursor(dictionary=True) as cursor:
@@ -22,7 +22,6 @@ def index():
             """)
             products = cursor.fetchall()
 
-            # 이미지 경로 추가 (카테고리/타입 기반)
             for p in products:
                 if p["image"]:
                     p["image_path"] = f"uploads/{p['category_name']}/{p['type_name']}/{p['image']}"
@@ -31,4 +30,5 @@ def index():
     finally:
         conn.close()
 
-    return render_template('index.html', products=products)
+    return jsonify(products)
+

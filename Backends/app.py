@@ -1,14 +1,11 @@
-import os
-from dotenv import load_dotenv
-load_dotenv()
-
 from flask import Flask
+from dotenv import load_dotenv
+from flask_cors import CORS
+import os
 import mysql.connector
 from mysql.connector import pooling
 
-# ──────────────────────────────────────────────
-# DB 헬퍼 – MySQL
-# ──────────────────────────────────────────────
+load_dotenv()
 
 DB_CONFIG = {
     "host":     os.getenv("MYSQL_HOST"),
@@ -19,7 +16,6 @@ DB_CONFIG = {
     "charset":  "utf8mb4",
 }
 
-# 커넥션 풀 생성 (worker 수 ≥ pool_size 권장)
 pool = pooling.MySQLConnectionPool(
     pool_name="mall_pool",
     pool_size=5,
@@ -27,37 +23,18 @@ pool = pooling.MySQLConnectionPool(
 )
 
 def get_db_connection():
-    """
-    사용 예)
-        conn = current_app.get_db_connection()
-        with conn.cursor(dictionary=True) as cur:
-            cur.execute("SELECT 1")
-            row = cur.fetchone()
-    """
     conn = pool.get_connection()
     conn.autocommit = False
     return conn
 
-# ──────────────────────────────────────────────
-# 애플리케이션 팩토리
-# ──────────────────────────────────────────────
-
-def create_app() -> Flask:
-    # Locate the Fronts directory alongside Backends
-    base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'Fronts'))
-
-    app = Flask(
-        __name__,
-        instance_relative_config=True,
-        static_folder=os.path.join(base_dir, 'static'),
-        template_folder=os.path.join(base_dir, 'templates')
-    )
+def create_app():
+    app = Flask(__name__)
     app.secret_key = os.urandom(24)
+    CORS(app)
 
-    # DB 헬퍼 주입
     app.get_db_connection = staticmethod(get_db_connection)
 
-    # ── Blueprint 등록 ─────────────────────────────────
+    # Blueprints
     from blueprints.main     import main_bp
     from blueprints.auth     import auth_bp
     from blueprints.cart     import cart_bp
@@ -66,31 +43,18 @@ def create_app() -> Flask:
     from blueprints.checkout import checkout_bp
     from blueprints.admin    import admin_bp
 
-    for bp in (
-        main_bp,
-        auth_bp,
-        cart_bp,
-        product_bp,
-        contact_bp,
-        checkout_bp,
-    ):
-        app.register_blueprint(bp)
-    app.register_blueprint(admin_bp)
-
-    # ── 전역 Jinja 컨텍스트 ────────────────────────────
-    @app.context_processor
-    def cart_count_processor():
-        """템플릿에서 {{ cart_count }} 사용."""
-        from flask import session
-        cart = session.get("cart", [])
-        total_items = sum(item["quantity"] for item in cart)
-        return dict(cart_count=total_items)
+    app.register_blueprint(main_bp)
+    app.register_blueprint(auth_bp,     url_prefix="/api/auth")
+    app.register_blueprint(cart_bp,     url_prefix="/api/cart")
+    app.register_blueprint(product_bp)
+    app.register_blueprint(contact_bp,  url_prefix="/api/contact")
+    app.register_blueprint(checkout_bp, url_prefix="/api/checkout")
+    app.register_blueprint(admin_bp,    url_prefix="/api/admin")
 
     return app
 
-# ──────────────────────────────────────────────
-# 로컬 실행 (flask run 대신 python app.py로도 가능)
-# ──────────────────────────────────────────────
+app = create_app()
+
 if __name__ == "__main__":
-    app = create_app()
     app.run(debug=True)
+
