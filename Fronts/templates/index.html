@@ -2,33 +2,32 @@
 <html lang="ko">
 <head>
   <title>Source de Vérité</title>
-  <link rel="icon" href="{{ url_for('static', filename='images/logo.png') }}" type="image/png">
+  <link rel="icon" href="/static/images/logo.png" type="image/png">
   <meta charset="utf-8" />
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <link rel="stylesheet" href="/static/css/style.css">
 </head>
 
 <body>
-  {% include 'navbar.html' %}
+  <!-- ✅ 정적인 navbar는 include 대신 직접 삽입하거나 JS로 모듈화 -->
+  <div class="navbar">
+    <a href="/" class="logo">Source de Vérité</a>
+    <nav>
+      <a href="/">Home</a>
+      <a href="/products.html">Products</a>
+      <a href="/contact.html">Contact</a>
+    </nav>
+  </div>
 
-  <!-- 🔁 슬라이드 이미지 영역 -->
-  <a id="sliderLink" href="{{ url_for('product_bp.product_detail', product_id=36) }}">
-    <img class="hero_header" id="heroSlider" src="{{ url_for('static', filename='images/onepiece.jpg') }}" alt="One Piece">
+  <!-- 🔁 슬라이드 이미지 영역 (정적 링크로 고정) -->
+  <a id="sliderLink" href="/product/36">
+    <img class="hero_header" id="heroSlider" src="/static/images/onepiece.jpg" alt="One Piece">
   </a>
 
   <script>
     const images = [
-      {
-        src: "{{ url_for('static', filename='images/onepiece.jpg') }}",
-        link: "{{ url_for('product_bp.product_detail', product_id=36) }}"
-      },
-      {
-        src: "{{ url_for('static', filename='images/shoe2.jpg') }}",
-        link: "{{ url_for('product_bp.product_detail', product_id=34) }}"
-      },
-      {
-        src: "{{ url_for('static', filename='images/supreme.jpg') }}",
-        link: "{{ url_for('product_bp.product_detail', product_id=33) }}"
-      }
+      { src: "/static/images/onepiece.jpg", link: "/product/36" },
+      { src: "/static/images/shoe2.jpg", link: "/product/34" },
+      { src: "/static/images/supreme.jpg", link: "/product/33" }
     ];
 
     let currentIndex = 0;
@@ -53,12 +52,12 @@
   </div>
 
   <script>
-    const API_BASE = 'http://192.168.195.128:8000';
+    const API_BASE = "http://192.168.10.10:8000"; // 예: http://192.168.10.10:8000
 
     async function fetchProducts() {
       const res = await fetch(`${API_BASE}/api/products`);
-      if (!res.ok) throw new Error('Failed to load products');
-      return res.json();
+      if (!res.ok) throw new Error("상품 불러오기 실패");
+      return await res.json();
     }
 
     function renderProducts(products) {
@@ -68,8 +67,8 @@
         const item = document.createElement('div');
         item.className = 'slide-item';
         item.innerHTML = `
-          <a href="${API_BASE}/product/${prod.id}">
-            <img src="static/${prod.image_path}" alt="${prod.name}" class="product-image">
+          <a href="/product/${prod.id}">
+            <img src="/static/${prod.image_path}" alt="${prod.name}" class="product-image">
             <p>${prod.name}</p>
             <p class="price">${prod.price}₩</p>
           </a>`;
@@ -77,43 +76,41 @@
       });
     }
 
-    // Reuse existing slider controls
-    const prevBtn = document.querySelector('.prev-btn');
-    const nextBtn = document.querySelector('.next-btn');
-
-    function updateSliderPosition() {
-      const sliderWrapper = document.getElementById('productsSlider');
-      const slideItems = sliderWrapper.querySelectorAll('.slide-item');
+    function updateSlider() {
+      const wrapper = document.getElementById('productsSlider');
+      const items = wrapper.querySelectorAll('.slide-item');
       const itemsPerView = 4;
-      const totalItems = slideItems.length;
-      const totalSlides = Math.ceil(totalItems / itemsPerView);
+      const totalSlides = Math.ceil(items.length / itemsPerView);
       let currentSlide = 0;
 
-      function moveSlide(dir) {
-        currentSlide = Math.min(Math.max(currentSlide + dir, 0), totalSlides - 1);
-        const slideWidth = slideItems[0]?.offsetWidth || 0;
-        sliderWrapper.style.transform = `translateX(-${currentSlide * slideWidth * itemsPerView}px)`;
-        prevBtn.disabled = currentSlide === 0;
-        nextBtn.disabled = currentSlide >= totalSlides - 1;
+      function move(dir) {
+        currentSlide = Math.max(0, Math.min(currentSlide + dir, totalSlides - 1));
+        const width = items[0]?.offsetWidth || 0;
+        wrapper.style.transform = `translateX(-${currentSlide * width * itemsPerView}px)`;
+        document.querySelector('.prev-btn').disabled = currentSlide === 0;
+        document.querySelector('.next-btn').disabled = currentSlide >= totalSlides - 1;
       }
 
-      nextBtn.addEventListener('click', () => moveSlide(1));
-      prevBtn.addEventListener('click', () => moveSlide(-1));
-      moveSlide(0);
-      window.addEventListener('resize', () => moveSlide(0));
+      document.querySelector('.prev-btn').onclick = () => move(-1);
+      document.querySelector('.next-btn').onclick = () => move(1);
+      move(0);
+      window.addEventListener('resize', () => move(0));
     }
 
     window.addEventListener('DOMContentLoaded', async () => {
       try {
         const products = await fetchProducts();
         renderProducts(products);
-        updateSliderPosition();
+        updateSlider();
       } catch (e) {
         console.error(e);
       }
     });
   </script>
 
-  {% include 'footer.html' %}
+  <!-- footer도 직접 삽입하거나 js로 모듈화 -->
+  <footer style="text-align:center; margin-top:3rem;">
+    <p>© 2025 Source de Vérité</p>
+  </footer>
 </body>
 </html>
